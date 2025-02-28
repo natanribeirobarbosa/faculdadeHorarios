@@ -1,0 +1,1 @@
+Gerando link para download do aplicativo.

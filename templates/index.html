@@ -85,8 +85,42 @@
             <input type="text" id="profNome" placeholder="Nome do professor">
         </div>
         <div>
-            <label for="profDisp">Disponibilidade:</label>
-            <input type="text" id="profDisp" placeholder="Ex: Segunda 08:00-12:00, Quarta 14:00-18:00">
+            <label>Disponibilidade:</label>
+            <div id="horarioGrid" style="margin-top: 10px; overflow-x: auto;">
+                <table class="horario-table">
+                    <thead>
+                        <tr>
+                            <th>Horários</th>
+                            <th>Segunda</th>
+                            <th>Terça</th>
+                            <th>Quarta</th>
+                            <th>Quinta</th>
+                            <th>Sexta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Horários Matutinos -->
+                        <tr><td colspan="6" style="text-align: center; background-color: #e0f0ff;"><b>Período Matutino</b></td></tr>
+                        <tr><td>07:30 - 08:20</td><td><input type="checkbox" value="Segunda 07:30-08:20"></td><td><input type="checkbox" value="Terça 07:30-08:20"></td><td><input type="checkbox" value="Quarta 07:30-08:20"></td><td><input type="checkbox" value="Quinta 07:30-08:20"></td><td><input type="checkbox" value="Sexta 07:30-08:20"></td></tr>
+                        <tr><td>08:20 - 09:10</td><td><input type="checkbox" value="Segunda 08:20-09:10"></td><td><input type="checkbox" value="Terça 08:20-09:10"></td><td><input type="checkbox" value="Quarta 08:20-09:10"></td><td><input type="checkbox" value="Quinta 08:20-09:10"></td><td><input type="checkbox" value="Sexta 08:20-09:10"></td></tr>
+                        <tr><td>09:10 - 10:00</td><td><input type="checkbox" value="Segunda 09:10-10:00"></td><td><input type="checkbox" value="Terça 09:10-10:00"></td><td><input type="checkbox" value="Quarta 09:10-10:00"></td><td><input type="checkbox" value="Quinta 09:10-10:00"></td><td><input type="checkbox" value="Sexta 09:10-10:00"></td></tr>
+                        <tr><td>10:20 - 11:10</td><td><input type="checkbox" value="Segunda 10:20-11:10"></td><td><input type="checkbox" value="Terça 10:20-11:10"></td><td><input type="checkbox" value="Quarta 10:20-11:10"></td><td><input type="checkbox" value="Quinta 10:20-11:10"></td><td><input type="checkbox" value="Sexta 10:20-11:10"></td></tr>
+                        <tr><td>11:10 - 12:00</td><td><input type="checkbox" value="Segunda 11:10-12:00"></td><td><input type="checkbox" value="Terça 11:10-12:00"></td><td><input type="checkbox" value="Quarta 11:10-12:00"></td><td><input type="checkbox" value="Quinta 11:10-12:00"></td><td><input type="checkbox" value="Sexta 11:10-12:00"></td></tr>
+                        
+                        <!-- Horários Noturnos -->
+                        <tr><td colspan="6" style="text-align: center; background-color: #e0f0ff;"><b>Período Noturno</b></td></tr>
+                        <tr><td>19:00 - 19:50</td><td><input type="checkbox" value="Segunda 19:00-19:50"></td><td><input type="checkbox" value="Terça 19:00-19:50"></td><td><input type="checkbox" value="Quarta 19:00-19:50"></td><td><input type="checkbox" value="Quinta 19:00-19:50"></td><td><input type="checkbox" value="Sexta 19:00-19:50"></td></tr>
+                        <tr><td>19:50 - 20:40</td><td><input type="checkbox" value="Segunda 19:50-20:40"></td><td><input type="checkbox" value="Terça 19:50-20:40"></td><td><input type="checkbox" value="Quarta 19:50-20:40"></td><td><input type="checkbox" value="Quinta 19:50-20:40"></td><td><input type="checkbox" value="Sexta 19:50-20:40"></td></tr>
+                        <tr><td>20:40 - 21:30</td><td><input type="checkbox" value="Segunda 20:40-21:30"></td><td><input type="checkbox" value="Terça 20:40-21:30"></td><td><input type="checkbox" value="Quarta 20:40-21:30"></td><td><input type="checkbox" value="Quinta 20:40-21:30"></td><td><input type="checkbox" value="Sexta 20:40-21:30"></td></tr>
+                        <tr><td>21:30 - 22:20</td><td><input type="checkbox" value="Segunda 21:30-22:20"></td><td><input type="checkbox" value="Terça 21:30-22:20"></td><td><input type="checkbox" value="Quarta 21:30-22:20"></td><td><input type="checkbox" value="Quinta 21:30-22:20"></td><td><input type="checkbox" value="Sexta 21:30-22:20"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 5px;">
+                <button type="button" id="selecionarTodos" style="background-color: #2196F3; font-size: 12px; margin-right: 5px;">Selecionar Todos</button>
+                <button type="button" id="limparSelecao" style="background-color: #ff9800; font-size: 12px;">Limpar Seleção</button>
+            </div>
+            <input type="hidden" id="profDisp">
         </div>
         <button onclick="adicionarProfessor()">Adicionar Professor</button>
         <div id="resultadoProfessor" class="result" style="display: none;"></div>
@@ -132,7 +166,25 @@
         window.onload = function() {
             listarProfessores();
             listarMaterias();
+            
+            // Configurar eventos para os botões de seleção de horários
+            document.getElementById('selecionarTodos').addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = true);
+            });
+            
+            document.getElementById('limparSelecao').addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+            });
         };
+        
+        // Função para obter os horários selecionados na grade
+        function obterHorariosSelecionados() {
+            const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]:checked');
+            const horarios = Array.from(checkboxes).map(cb => cb.value);
+            return horarios.join(', ');
+        }
         
         function removerProfessor(professorId) {
             if (!confirm(`Tem certeza que deseja remover o professor ID ${professorId}? Todas as matérias associadas também serão removidas.`)) {
@@ -223,10 +275,15 @@
 
         function adicionarProfessor() {
             const nome = document.getElementById('profNome').value;
-            const disponibilidade = document.getElementById('profDisp').value;
+            const disponibilidade = obterHorariosSelecionados();
             
-            if (!nome || !disponibilidade) {
-                alert('Preencha todos os campos!');
+            if (!nome) {
+                alert('Preencha o nome do professor!');
+                return;
+            }
+            
+            if (!disponibilidade) {
+                alert('Selecione pelo menos um horário disponível!');
                 return;
             }
             
@@ -354,7 +411,9 @@
                     html += `<tr>
                         <td>${prof.id}</td>
                         <td>${prof.nome}</td>
-                        <td>${prof.disponibilidade}</td>
+                        <td>
+                            <button onclick="visualizarDisponibilidade('${prof.disponibilidade}')" class="edit">Ver Horários</button>
+                        </td>
                         <td>
                             <button onclick="removerProfessor(${prof.id})">Remover</button>
                         </td>
@@ -376,6 +435,25 @@
             });
         }
 
+        function visualizarDisponibilidade(disponibilidade) {
+            // Limpar todos os checkboxes primeiro
+            const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            
+            // Marcar os horários da disponibilidade
+            const horarios = disponibilidade.split(', ');
+            horarios.forEach(horario => {
+                const checkbox = Array.from(checkboxes).find(cb => cb.value === horario);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            
+            // Rolar até a seção de horários
+            document.getElementById('horarioGrid').scrollIntoView({ behavior: 'smooth' });
+            alert('Horários do professor carregados na grade!');
+        }
+        
         function listarMaterias() {
             fetch('/listar_materias')
             .then(response => response.json())

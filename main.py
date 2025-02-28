@@ -129,6 +129,14 @@ def limpar_horario(materia_id):
 def gerar_horarios():
     materias = Materia.query.filter(Materia.horario == None).all()
     alocacao = {}
+    
+    # Obter todos os horários já alocados para todos os professores
+    todos_horarios_ocupados = {}
+    todas_materias = Materia.query.filter(Materia.horario != None).all()
+    for mat in todas_materias:
+        if mat.horario:
+            # Guardar o horário e qual professor já está usando
+            todos_horarios_ocupados[mat.horario] = mat.professor_id
 
     for materia in materias:
         prof = Professor.query.get(materia.professor_id)
@@ -137,20 +145,27 @@ def gerar_horarios():
             
         horarios_disp = prof.disponibilidade.split(', ')
         
-        # Verificar horários já alocados para esse professor
-        horarios_ocupados = []
+        # Verificar horários já alocados para esse professor específico
+        horarios_ocupados_prof = []
         for mat in prof.materias:
             if mat.horario:
-                horarios_ocupados.append(mat.horario)
+                horarios_ocupados_prof.append(mat.horario)
         
         for horario in horarios_disp:
-            if horario not in alocacao.values() and horario not in horarios_ocupados:
+            # Verificar se o horário já não está alocado para outro professor
+            if horario in todos_horarios_ocupados and todos_horarios_ocupados[horario] != prof.id:
+                continue  # Pula este horário, pois já está alocado para outro professor
+                
+            # Verificar se o horário não está em uso pelo próprio professor ou não foi alocado nesta rodada
+            if horario not in alocacao.values() and horario not in horarios_ocupados_prof:
                 alocacao[materia.id] = horario
                 materia.horario = horario
+                # Atualizar a lista de horários ocupados
+                todos_horarios_ocupados[horario] = prof.id
                 break
     
     db.session.commit()
-    return jsonify({"message": "Horários gerados!", "alocacao": alocacao})
+    return jsonify({"message": "Horários gerados sem conflitos!", "alocacao": alocacao})
 
 # Tratamento de erro 404
 @app.errorhandler(404)

@@ -127,42 +127,105 @@ def limpar_horario(materia_id):
 # Rota para gerar horários sem conflito
 @app.route('/gerar_horarios', methods=['POST'])
 def gerar_horarios():
-    materias = Materia.query.filter(Materia.horario == None).all()
-    alocacao = {}
+    # Função auxiliar para extrair dia e hora de um horário
+    def extrair_dia_hora(horario_str):
+        partes = horario_str.split(' ', 1)
+        if len(partes) >= 2:
+            return partes[0], partes[1]  # Dia, Hora
+        return horario_str, ""
     
-    # Obter todos os horários já alocados para todos os professores
-    todos_horarios_ocupados = {}
-    todas_materias = Materia.query.filter(Materia.horario != None).all()
-    for mat in todas_materias:
-        if mat.horario:
-            # Guardar o horário e qual professor já está usando
-            todos_horarios_ocupados[mat.horario] = mat.professor_id
-
+    # Buscar todas as matérias sem horário alocado
+    materias = Materia.query.filter(Materia.horario == None).all()
+    
+    # Ordenar matérias - primeiro professores com menos disponibilidade
+    materias_ordenadas = []
     for materia in materias:
         prof = Professor.query.get(materia.professor_id)
+        if prof:
+            horarios_disp = prof.disponibilidade.split(', ')
+            materias_ordenadas.append((materia, len(horarios_disp)))
+    
+    # Ordenar por disponibilidade (do menor para o maior)
+    materias_ordenadas.sort(key=lambda x: x[1])
+    
+    # Dicionário para armazenar os resultados da alocação
+    alocacao = {}
+    
+    # Mapa de todos os horários já alocados (horário -> professor_id)
+    horarios_ocupados = {}
+    
+    # Preencher o mapa com horários já existentes
+    todas_materias_com_horario = Materia.query.filter(Materia.horario != None).all()
+    for mat in todas_materias_com_horario:
+        if mat.horario:
+            horarios_ocupados[mat.horario] = mat.professor_id
+    
+    # Para cada matéria (começando pelas que têm menos opções)
+    for materia, _ in materias_ordenadas:
+        prof = Professor.query.get(materia.professor_id)
         if not prof:
-            continue  # Pula se o professor não existir
-            
+            continue
+        
+        # Obter todos os horários disponíveis do professor
         horarios_disp = prof.disponibilidade.split(', ')
         
-        # Verificar horários já alocados para esse professor específico
-        horarios_ocupados_prof = []
+        # Obter horários que o professor já está usando
+        horarios_usados_pelo_prof = []
         for mat in prof.materias:
             if mat.horario:
-                horarios_ocupados_prof.append(mat.horario)
+                horarios_usados_pelo_prof.append(mat.horario)
         
+        # Verificar dias já ocupados pelo professor para distribuir melhor
+        dias_ocupados = {}
+        for horario in horarios_usados_pelo_prof:
+            dia, _ = extrair_dia_hora(horario)
+            if dia in dias_ocupados:
+                dias_ocupados[dia] += 1
+            else:
+                dias_ocupados[dia] = 1
+        
+        # Ordenar horários disponíveis priorizando dias menos usados
+        def prioridade_horario(horario):
+            dia, _ = extrair_dia_hora(horario)
+            return dias_ocupados.get(dia, 0)
+        
+        horarios_disp.sort(key=prioridade_horario)
+        
+        # Tentar alocar em algum horário disponível
+        horario_encontrado = False
         for horario in horarios_disp:
-            # Verificar se o horário já não está alocado para outro professor
-            if horario in todos_horarios_ocupados and todos_horarios_ocupados[horario] != prof.id:
-                continue  # Pula este horário, pois já está alocado para outro professor
+            # Verificar se o horário já está alocado para outro professor
+            if horario in horarios_ocupados and horarios_ocupados[horario] != prof.id:
+                continue
+            
+            # Verificar se o professor já está ocupado neste horário
+            if horario in horarios_usados_pelo_prof:
+                continue
                 
-            # Verificar se o horário não está em uso pelo próprio professor ou não foi alocado nesta rodada
-            if horario not in alocacao.values() and horario not in horarios_ocupados_prof:
-                alocacao[materia.id] = horario
-                materia.horario = horario
-                # Atualizar a lista de horários ocupados
-                todos_horarios_ocupados[horario] = prof.id
-                break
+            # Verificar se este horário já foi alocado nesta rodada atual
+            if horario in alocacao.values():
+                continue
+                
+            # Encontramos um horário válido!
+            alocacao[materia.id] = horario
+            materia.horario = horario
+            horarios_ocupados[horario] = prof.id
+            horario_encontrado = True
+            break
+        
+        if not horario_encontrado:
+            # Não encontrou horário - tentar novamente com menos restrições
+            # (apenas evitando conflitos diretos)
+            for horario in horarios_disp:
+                if horario not in horarios_usados_pelo_prof and horario not in alocacao.values():
+                    # Verificar conflito com outros professores
+                    if horario in horarios_ocupados and horarios_ocupados[horario] != prof.id:
+                        continue
+                        
+                    alocacao[materia.id] = horario
+                    materia.horario = horario
+                    horarios_ocupados[horario] = prof.id
+                    break
     
     db.session.commit()
     return jsonify({"message": "Horários gerados sem conflitos!", "alocacao": alocacao})

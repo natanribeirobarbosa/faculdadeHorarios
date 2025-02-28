@@ -37,6 +37,21 @@
         }
         button:hover {
             background-color: #45a049;
+            opacity: 0.9;
+        }
+        
+        button.delete {
+            background-color: #f44336;
+        }
+        
+        button.edit {
+            background-color: #2196F3;
+        }
+        
+        td button {
+            margin: 2px;
+            padding: 5px 10px;
+            font-size: 12px;
         }
         .result {
             margin-top: 20px;
@@ -96,6 +111,7 @@
     <div class="section">
         <h2>Gerar Horários</h2>
         <button onclick="gerarHorarios()">Gerar Horários</button>
+        <button onclick="limparTodosHorarios()" style="background-color: #ff9800;">Limpar Todos Horários</button>
         <div id="resultadoHorarios" class="result" style="display: none;"></div>
     </div>
     
@@ -117,6 +133,93 @@
             listarProfessores();
             listarMaterias();
         };
+        
+        function removerProfessor(professorId) {
+            if (!confirm(`Tem certeza que deseja remover o professor ID ${professorId}? Todas as matérias associadas também serão removidas.`)) {
+                return;
+            }
+            
+            fetch(`/remover_professor/${professorId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                listarProfessores();
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao remover professor!');
+            });
+        }
+        
+        function removerMateria(materiaId) {
+            if (!confirm(`Tem certeza que deseja remover a matéria ID ${materiaId}?`)) {
+                return;
+            }
+            
+            fetch(`/remover_materia/${materiaId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao remover matéria!');
+            });
+        }
+        
+        function limparHorario(materiaId) {
+            fetch(`/limpar_horario/${materiaId}`, {
+                method: 'PUT'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao limpar horário!');
+            });
+        }
+        
+        function limparTodosHorarios() {
+            if (!confirm('Tem certeza que deseja limpar todos os horários?')) {
+                return;
+            }
+            
+            fetch('/listar_materias')
+            .then(response => response.json())
+            .then(data => {
+                const materias = data.materias;
+                let promises = [];
+                
+                materias.forEach(materia => {
+                    if (materia.horario) {
+                        promises.push(
+                            fetch(`/limpar_horario/${materia.id}`, {
+                                method: 'PUT'
+                            })
+                        );
+                    }
+                });
+                
+                return Promise.all(promises);
+            })
+            .then(() => {
+                alert('Todos os horários foram limpos!');
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao limpar todos os horários!');
+            });
+        }
 
         function adicionarProfessor() {
             const nome = document.getElementById('profNome').value;
@@ -245,10 +348,17 @@
                     return;
                 }
                 
-                let html = '<table><tr><th>ID</th><th>Nome</th><th>Disponibilidade</th></tr>';
+                let html = '<table><tr><th>ID</th><th>Nome</th><th>Disponibilidade</th><th>Ações</th></tr>';
                 
                 data.professores.forEach(prof => {
-                    html += `<tr><td>${prof.id}</td><td>${prof.nome}</td><td>${prof.disponibilidade}</td></tr>`;
+                    html += `<tr>
+                        <td>${prof.id}</td>
+                        <td>${prof.nome}</td>
+                        <td>${prof.disponibilidade}</td>
+                        <td>
+                            <button onclick="removerProfessor(${prof.id})">Remover</button>
+                        </td>
+                    </tr>`;
                     
                     // Adicionar ao select
                     const option = document.createElement('option');
@@ -277,14 +387,22 @@
                     return;
                 }
                 
-                let html = '<table><tr><th>ID</th><th>Nome</th><th>Professor</th><th>Horário</th></tr>';
+                let html = '<table><tr><th>ID</th><th>Nome</th><th>Professor</th><th>Horário</th><th>Ações</th></tr>';
                 
                 data.materias.forEach(mat => {
+                    let acaoHorario = mat.horario ? 
+                        `<button onclick="limparHorario(${mat.id})">Limpar Horário</button>` : 
+                        '';
+                    
                     html += `<tr>
                         <td>${mat.id}</td>
                         <td>${mat.nome}</td>
                         <td>${mat.professor_nome || 'Não definido'}</td>
                         <td>${mat.horario || 'Não definido'}</td>
+                        <td>
+                            <button onclick="removerMateria(${mat.id})">Remover</button>
+                            ${acaoHorario}
+                        </td>
                     </tr>`;
                 });
                 

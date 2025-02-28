@@ -86,6 +86,44 @@ def listar_materias():
     
     return jsonify({"materias": materias_lista})
 
+# Rota para remover professor
+@app.route('/remover_professor/<int:professor_id>', methods=['DELETE'])
+def remover_professor(professor_id):
+    professor = Professor.query.get(professor_id)
+    if not professor:
+        return jsonify({"error": "Professor não encontrado!"}), 404
+    
+    # Verificar se o professor tem matérias associadas
+    materias = Materia.query.filter_by(professor_id=professor_id).all()
+    for materia in materias:
+        db.session.delete(materia)
+    
+    db.session.delete(professor)
+    db.session.commit()
+    return jsonify({"message": "Professor e suas matérias removidos com sucesso!"})
+
+# Rota para remover matéria
+@app.route('/remover_materia/<int:materia_id>', methods=['DELETE'])
+def remover_materia(materia_id):
+    materia = Materia.query.get(materia_id)
+    if not materia:
+        return jsonify({"error": "Matéria não encontrada!"}), 404
+    
+    db.session.delete(materia)
+    db.session.commit()
+    return jsonify({"message": "Matéria removida com sucesso!"})
+
+# Rota para limpar horário de uma matéria
+@app.route('/limpar_horario/<int:materia_id>', methods=['PUT'])
+def limpar_horario(materia_id):
+    materia = Materia.query.get(materia_id)
+    if not materia:
+        return jsonify({"error": "Matéria não encontrada!"}), 404
+    
+    materia.horario = None
+    db.session.commit()
+    return jsonify({"message": "Horário da matéria removido com sucesso!"})
+
 # Rota para gerar horários sem conflito
 @app.route('/gerar_horarios', methods=['POST'])
 def gerar_horarios():

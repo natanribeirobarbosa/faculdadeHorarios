@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Habilitar CORS para todas as rotas
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///schedule.db'
 db = SQLAlchemy(app)
 
@@ -61,6 +63,24 @@ def gerar_horarios():
     
     db.session.commit()
     return jsonify({"message": "Horários gerados!", "alocacao": alocacao})
+
+# Rota principal para verificação do servidor
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({
+        "status": "online",
+        "message": "API de agendamento está funcionando!",
+        "endpoints": [
+            "/add_professor", 
+            "/add_materia", 
+            "/gerar_horarios"
+        ]
+    })
+
+# Tratamento de erro 404
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Rota não encontrada. Use uma das rotas disponíveis."}), 404
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

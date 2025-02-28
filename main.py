@@ -6,6 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas as rotas
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///schedule.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Modelo de Professores
@@ -26,6 +27,11 @@ class Materia(db.Model):
 with app.app_context():
     db.create_all()
 
+# Rota principal para a interface web
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
 # Rota para adicionar professor
 @app.route('/add_professor', methods=['POST'])
 def add_professor():
@@ -44,38 +50,69 @@ def add_materia():
     db.session.commit()
     return jsonify({"message": "Matéria cadastrada com sucesso!"})
 
+# Rota para listar professores
+@app.route('/listar_professores', methods=['GET'])
+def listar_professores():
+    professores = Professor.query.all()
+    professores_lista = []
+    
+    for prof in professores:
+        professores_lista.append({
+            'id': prof.id,
+            'nome': prof.nome,
+            'disponibilidade': prof.disponibilidade
+        })
+    
+    return jsonify({"professores": professores_lista})
+
+# Rota para listar matérias
+@app.route('/listar_materias', methods=['GET'])
+def listar_materias():
+    materias = Materia.query.all()
+    materias_lista = []
+    
+    for mat in materias:
+        professor_nome = None
+        if mat.professor:
+            professor_nome = mat.professor.nome
+            
+        materias_lista.append({
+            'id': mat.id,
+            'nome': mat.nome,
+            'professor_id': mat.professor_id,
+            'professor_nome': professor_nome,
+            'horario': mat.horario
+        })
+    
+    return jsonify({"materias": materias_lista})
+
 # Rota para gerar horários sem conflito
 @app.route('/gerar_horarios', methods=['POST'])
 def gerar_horarios():
-    professores = Professor.query.all()
     materias = Materia.query.filter(Materia.horario == None).all()
     alocacao = {}
 
     for materia in materias:
         prof = Professor.query.get(materia.professor_id)
+        if not prof:
+            continue  # Pula se o professor não existir
+            
         horarios_disp = prof.disponibilidade.split(', ')
         
+        # Verificar horários já alocados para esse professor
+        horarios_ocupados = []
+        for mat in prof.materias:
+            if mat.horario:
+                horarios_ocupados.append(mat.horario)
+        
         for horario in horarios_disp:
-            if horario not in alocacao.values():
+            if horario not in alocacao.values() and horario not in horarios_ocupados:
                 alocacao[materia.id] = horario
                 materia.horario = horario
                 break
     
     db.session.commit()
     return jsonify({"message": "Horários gerados!", "alocacao": alocacao})
-
-# Rota principal para verificação do servidor
-@app.route('/', methods=['GET'])
-def index():
-    return jsonify({
-        "status": "online",
-        "message": "API de agendamento está funcionando!",
-        "endpoints": [
-            "/add_professor", 
-            "/add_materia", 
-            "/gerar_horarios"
-        ]
-    })
 
 # Tratamento de erro 404
 @app.errorhandler(404)

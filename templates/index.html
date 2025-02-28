@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Agendamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        h2 {
+            color: #333;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sistema de Agendamento</h1>
+    
+    <div class="section">
+        <h2>Adicionar Professor</h2>
+        <div>
+            <label for="profNome">Nome:</label>
+            <input type="text" id="profNome" placeholder="Nome do professor">
+        </div>
+        <div>
+            <label for="profDisp">Disponibilidade:</label>
+            <input type="text" id="profDisp" placeholder="Ex: Segunda 08:00-12:00, Quarta 14:00-18:00">
+        </div>
+        <button onclick="adicionarProfessor()">Adicionar Professor</button>
+        <div id="resultadoProfessor" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Adicionar Matéria</h2>
+        <div>
+            <label for="matNome">Nome da Matéria:</label>
+            <input type="text" id="matNome" placeholder="Nome da matéria">
+        </div>
+        <div>
+            <label for="matProf">Professor:</label>
+            <select id="matProf">
+                <option value="">Selecione um professor</option>
+            </select>
+        </div>
+        <button onclick="adicionarMateria()">Adicionar Matéria</button>
+        <div id="resultadoMateria" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Gerar Horários</h2>
+        <button onclick="gerarHorarios()">Gerar Horários</button>
+        <div id="resultadoHorarios" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Lista de Professores</h2>
+        <button onclick="listarProfessores()">Atualizar Lista</button>
+        <div id="listaProfessores"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Lista de Matérias</h2>
+        <button onclick="listarMaterias()">Atualizar Lista</button>
+        <div id="listaMaterias"></div>
+    </div>
+
+    <script>
+        // Carregar dados ao iniciar a página
+        window.onload = function() {
+            listarProfessores();
+            listarMaterias();
+        };
+
+        function adicionarProfessor() {
+            const nome = document.getElementById('profNome').value;
+            const disponibilidade = document.getElementById('profDisp').value;
+            
+            if (!nome || !disponibilidade) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+            
+            fetch('/add_professor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    disponibilidade: disponibilidade
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('resultadoProfessor');
+                resultDiv.textContent = data.message;
+                resultDiv.style.display = 'block';
+                
+                // Limpar campos
+                document.getElementById('profNome').value = '';
+                document.getElementById('profDisp').value = '';
+                
+                // Atualizar lista de professores
+                listarProfessores();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar professor!');
+            });
+        }
+
+        function adicionarMateria() {
+            const nome = document.getElementById('matNome').value;
+            const professorId = document.getElementById('matProf').value;
+            
+            if (!nome || !professorId) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+            
+            fetch('/add_materia', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    professor_id: parseInt(professorId)
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('resultadoMateria');
+                resultDiv.textContent = data.message;
+                resultDiv.style.display = 'block';
+                
+                // Limpar campos
+                document.getElementById('matNome').value = '';
+                document.getElementById('matProf').value = '';
+                
+                // Atualizar lista de matérias
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar matéria!');
+            });
+        }
+
+        function gerarHorarios() {
+            fetch('/gerar_horarios', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('resultadoHorarios');
+                resultDiv.innerHTML = `<p>${data.message}</p>`;
+                
+                if (data.alocacao) {
+                    let html = '<table><tr><th>Matéria ID</th><th>Horário</th></tr>';
+                    
+                    Object.entries(data.alocacao).forEach(([materiaId, horario]) => {
+                        html += `<tr><td>${materiaId}</td><td>${horario}</td></tr>`;
+                    });
+                    
+                    html += '</table>';
+                    resultDiv.innerHTML += html;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+                // Atualizar lista de matérias para mostrar horários
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao gerar horários!');
+            });
+        }
+
+        function listarProfessores() {
+            fetch('/listar_professores')
+            .then(response => response.json())
+            .then(data => {
+                const listaDiv = document.getElementById('listaProfessores');
+                const select = document.getElementById('matProf');
+                
+                // Limpar select, mantendo a primeira opção
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+                
+                if (data.professores.length === 0) {
+                    listaDiv.innerHTML = '<p>Nenhum professor cadastrado.</p>';
+                    return;
+                }
+                
+                let html = '<table><tr><th>ID</th><th>Nome</th><th>Disponibilidade</th></tr>';
+                
+                data.professores.forEach(prof => {
+                    html += `<tr><td>${prof.id}</td><td>${prof.nome}</td><td>${prof.disponibilidade}</td></tr>`;
+                    
+                    // Adicionar ao select
+                    const option = document.createElement('option');
+                    option.value = prof.id;
+                    option.textContent = prof.nome;
+                    select.appendChild(option);
+                });
+                
+                html += '</table>';
+                listaDiv.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('listaProfessores').innerHTML = '<p>Erro ao carregar professores.</p>';
+            });
+        }
+
+        function listarMaterias() {
+            fetch('/listar_materias')
+            .then(response => response.json())
+            .then(data => {
+                const listaDiv = document.getElementById('listaMaterias');
+                
+                if (data.materias.length === 0) {
+                    listaDiv.innerHTML = '<p>Nenhuma matéria cadastrada.</p>';
+                    return;
+                }
+                
+                let html = '<table><tr><th>ID</th><th>Nome</th><th>Professor</th><th>Horário</th></tr>';
+                
+                data.materias.forEach(mat => {
+                    html += `<tr>
+                        <td>${mat.id}</td>
+                        <td>${mat.nome}</td>
+                        <td>${mat.professor_nome || 'Não definido'}</td>
+                        <td>${mat.horario || 'Não definido'}</td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                listaDiv.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('listaMaterias').innerHTML = '<p>Erro ao carregar matérias.</p>';
+            });
+        }
+    </script>
+</body>
+</html>

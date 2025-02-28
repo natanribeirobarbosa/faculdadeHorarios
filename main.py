@@ -21,8 +21,7 @@ class Materia(db.Model):
     horario = db.Column(db.String(50), nullable=True)  # Ex: "Segunda 08:00-10:00"
 
 # Inicializar Banco de Dados
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
 
 # Rota para adicionar professor

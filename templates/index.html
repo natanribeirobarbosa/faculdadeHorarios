@@ -49,6 +49,10 @@
         padding: 10px;
         text-align: center;
         }
+        
+        .btn{
+            display: none;
+        }
 
         .btn a{
         display: block;
@@ -70,7 +74,6 @@
             display: none;
         }
 
-  
 
     </style>
 </head>
@@ -87,17 +90,17 @@
     <div class="admin-section">
         <h3 id="titleAdm"></h3>
         <p id="pAdmin"></p>
-        <button style="display: none;" id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
     </div>
     <div class="user-section">
         <h3 id="titleUser"></h3>
         <p id="pUser"></p>
-        <button style="display: none;" id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
     </div>
     <div class="professor-section">
         <h3 id="titleProfessor"></h3>
         <p id="pProfessor"></p>
-        <button style="display: none;" id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
     </div>
 </div>
 
@@ -160,25 +163,28 @@
         document.querySelector('.user-section').style.display = 'none';
         document.querySelector('.professor-section').style.display = 'none';
         document.getElementById('login').style.display="none"
-        
+        document.getElementById("btnDashboard").style.display = "block";
 
         // Exibe a seção correspondente ao cargo
-        if (cargo === 'admin') {
+        if (cargo == 'admin') {
             document.querySelector('.admin-section').style.display = 'block';
             document.getElementById('titleAdm').innerHTML = 'Bem vindo '+name+'!'
             document.getElementById('pAdmin').innerHTML = 'Sendo ADM, aqui você pode gerenciar tudo!'
-            document.getElementById("btnDashboard").style.display = "block";
-        } else if (cargo === 'user') {
+            
+        } else if (cargo == 'user') {
             document.querySelector('.user-section').style.display = 'block';
             document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
             document.getElementById('pUser').innerHTML = 'Seu cargo não foi definido ainda... contate o ADM!'
-            document.getElementById("btnDashboard").style.display = "block";
+           
             
-        }else if(cargo === 'professor') {
+        }else if(cargo == 'professor') {
             document.querySelector('.professor-section').style.display = 'block';
             document.getElementById('titleProfessor').innerHTML = 'Bem vindo '+name+'!'
             document.getElementById('pProfessor').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
-            document.getElementById("btnDashboard").style.display = "block";
+         
+          
+        }else{
+            console.log('erro!')
         }
     }
 

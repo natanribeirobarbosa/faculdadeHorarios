@@ -5,98 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
-        }
-        .editable {
-            display: inline;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-        .editable input {
-            display: none;
-            width: 100px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        #editButton{
-            cursor: pointer;
-
-        }
-        #editButton:hover{
-            font-size: 20px;
-        }
-        #userName, #editButton {
-    display: inline-block;
-    margin-right: 5px;
-    transition: transform 0.3s ease;
+        #admins {
+  list-style-type: none; /* Remove os bullets */
+  padding: 0; /* Remove o padding */
+  display: flex; /* Alinha os <li> horizontalmente */
+  flex-wrap: wrap; /* Permite quebrar linha se necessário */
 }
 
-#userName:hover, #nameInput:hover, #editButton:hover {
-    transform: translateX(-5px) translateY(-2px); /* Oscila para a esquerda e para cima */
+ul li {
+  margin-right: 10px; /* Espaço entre os itens */
+  display: block;
+  font-size: 13px;
 }
 
-#editButton:hover {
-    animation: shake 0.5s ease infinite;
+ul li:after {
+  content: ","; /* Adiciona uma vírgula após cada item */
 }
 
-@keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    50% { transform: translateX(4px); }
-    75% { transform: translateX(-4px); }
-    100% { transform: translateX(0); }
+ul li:last-child:after {
+  content: ""; /* Remove a vírgula do último item */
+}
+.onlyAdmins{
+    display: none;
 }
 
-        .editable button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px;
-            width: 100%;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .logout {
-            background: red;
-        }
-        .logout:hover {
-            background: rgb(126, 0, 0);
-        }
+h2>.onlyAdmin{
+    font-size: 13px;
+    font-weight: normal;
+    color: #007bff;
+    cursor: pointer;
+}
+
+       
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Dashboard</h2>
+    <h1>Dashboard</h1>
     <p>Bem-vindo, 
         <span class="editable">
             <span id="userName">Carregando...</span>
@@ -108,6 +56,22 @@
     <button class="logout" onclick="logout()">Sair</button>
 </div>
 
+
+<div>
+    <h2>Administradores</h2>
+    <ul id="admins"></ul>
+    <h2>Professores<span class="onlyAdmin"> Adicionar</span></h2>
+    <ul id="professores"></ul>
+    <h2>Coordenadores<span class="onlyAdmin"> Adicionar</span></h2>
+    <ul id="coordenadores"></ul>
+    <h2>Usuarios: (somente leitura)<span class="onlyAdmin"> Adicionar</span></h2>
+    <ul id="usuarios"></ul>
+
+
+
+
+
+</div>
 <script>
     let userId = getCookie("userId");
 
@@ -124,8 +88,61 @@
         fetch(`http://127.0.0.1:5000/user/${userId}`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
+                if (data.success){
                     document.getElementById("userName").innerText = data.user.nome;
+                    if(data.user.godmode){
+                        console.log(data.user.users)
+                    }
+
+                  
+                
+                    const admins = data.user.users.users_by_cargo.admin;
+                    const prof = data.user.users.users_by_cargo.professor;
+                    const cord = data.user.users.users_by_cargo.coordenador;
+                    const users = data.user.users.users_by_cargo.user;
+
+                    // Seleciona o elemento onde os <li> serão adicionados
+                    const listAdmin = document.getElementById('admins');
+                    const listProf = document.getElementById('professores');
+                    const listCord = document.getElementById('coordenadores');
+                    const listUsers = document.getElementById('usuarios'); 
+
+                    // Cria os <li> para cada admin
+                    admins.forEach(admin => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = admin.nome;  
+                    listAdmin.appendChild(listItem);
+                    });
+
+                    prof.forEach(admin => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = admin.nome+'<span class="onlyAdmins"> ('+admin.id+')</span>'
+                    listProf.appendChild(listItem);
+                    });
+
+                    cord.forEach(admin => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = admin.nome+'<span class="onlyAdmins"> ('+admin.id+')<span>';
+                    listCord.appendChild(listItem);
+                    });
+
+                    users.forEach(admin => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = admin.nome+'<span class="onlyAdmins"> ('+admin.id+')<span>';
+                    listUsers.appendChild(listItem);
+                    });
+
+
+                    if(data.user.cargo == 'admin'){
+                        var elementos = document.querySelectorAll('.onlyAdmins');
+                        elementos.forEach(function(elemento) {
+                       
+                            // Se o display for 'none', muda para 'block'
+                            elemento.style.display = 'inline';
+                    
+                    });
+                    }
+
                 } else {
                     alert("Erro ao carregar usuário.");
                 }

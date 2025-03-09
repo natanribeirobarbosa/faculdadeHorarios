@@ -16,6 +16,8 @@ db = firestore.client()
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas as rotas
 
+
+#------------------------------Rotas Nathan-----------------------------------------------------------------------
 # Rota principal para a interface web
 @app.route('/', methods=['GET'])
 def index():
@@ -68,7 +70,6 @@ def login():
         return jsonify({"success": False, "message": "Código inválido!"}), 401
     
 
-
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_data(user_id):
     try:
@@ -87,6 +88,8 @@ def get_user_data(user_id):
                     # Adicione outras informações que quiser retornar
                     'nome': user_data.get('nome', 'N/A'),
                     'email': user_data.get('email', 'N/A'),
+                    'godmode': user_data.get('godmode', False),
+                    'users':get_users_by_cargo(cargo)
                 }
             })
 
@@ -96,6 +99,53 @@ def get_user_data(user_id):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+def get_users_by_cargo(model):
+    try:
+        # Acessa toda a coleção 'users'
+        users_ref = db.collection('users')
+        users_docs = users_ref.get()  # Obtém todos os documentos da coleção
+
+        if users_docs:
+            # Dicionário para armazenar os usuários por cargo
+            users_by_cargo = {}
+
+            # Itera sobre cada documento (usuário)
+            for user_doc in users_docs:
+                user_data = user_doc.to_dict()  # Converte cada documento para um dicionário
+                cargo = user_data.get('cargo', 'user')  # Obtém o cargo, 'user' é o valor padrão
+
+                # Cria uma lista de usuários para cada cargo
+                if cargo not in users_by_cargo:
+                    users_by_cargo[cargo] = []
+
+                # Adiciona o usuário à lista do respectivo cargo
+                if model == 'admin':
+                    users_by_cargo[cargo].append({
+                        'id': user_doc.id, 
+                        'nome': user_data.get('nome', 'N/A'),
+                        'email': user_data.get('email', 'N/A'),
+                        'godmode': user_data.get('godmode', 'false')
+                    })
+
+                if model != 'admin':
+                    users_by_cargo[cargo].append({
+                        'nome': user_data.get('nome', 'N/A'),
+                        'email': user_data.get('email', 'N/A'),
+                    })
+
+                
+
+
+            return {'success': True, 'users_by_cargo': users_by_cargo}
+
+        return {'success': False, 'message': 'Nenhum usuário encontrado'}
+
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
+
+
+#-----------------------------------------rotas Moita-------------------------------------------------------------------------
 # Rota para adicionar professor
 @app.route('/add_professor', methods=['POST'])
 def add_professor():

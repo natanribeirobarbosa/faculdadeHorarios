@@ -1,0 +1,95 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+  flex-direction: column;
+}
+
+h1{
+  font-size: 20px;
+
+}
+
+h2{
+  font-size: 15px;
+}
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 300px;
+}
+.editable {
+  display: inline;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.editable input {
+  display: none;
+  width: 100px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+}
+
+#editButton{
+  cursor: pointer;
+
+}
+#editButton:hover{
+  font-size: 20px;
+}
+#userName, #editButton {
+display: inline-block;
+margin-right: 5px;
+transition: transform 0.3s ease;
+}
+
+#userName:hover, #nameInput:hover, #editButton:hover {
+transform: translateX(-5px) translateY(-2px); /* Oscila para a esquerda e para cima */
+}
+
+#editButton:hover {
+animation: shake 0.5s ease infinite;
+}
+
+@keyframes shake {
+0% { transform: translateX(0); }
+25% { transform: translateX(-4px); }
+50% { transform: translateX(4px); }
+75% { transform: translateX(-4px); }
+100% { transform: translateX(0); }
+}
+
+.editable button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+button {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover {
+  background: #0056b3;
+}
+.logout {
+  background: red;
+}
+.logout:hover {
+  background: rgb(126, 0, 0);
+}

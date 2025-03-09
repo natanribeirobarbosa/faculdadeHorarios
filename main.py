@@ -3,10 +3,15 @@ from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Inicializar o Firebase
-cred = credentials.Certificate('./horarios-e6e7e-firebase-adminsdk-fbsvc-13e0648b7e.json')
-firebase_admin.initialize_app(cred)
+
+# Inicializa o Firebase apenas se ainda não estiver inicializado
+if not firebase_admin._apps:
+    cred = credentials.Certificate("./horarios-e6e7e-firebase-adminsdk-fbsvc-13e0648b7e.json")  # Caminho do seu arquivo JSON
+    firebase_admin.initialize_app(cred)
+
+# Inicializa o cliente do Firestore
 db = firestore.client()
+
 
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas as rotas
@@ -15,6 +20,81 @@ CORS(app)  # Habilitar CORS para todas as rotas
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+
+# Rota para a interface dashboard
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    return render_template('dashboard.html')
+
+
+@app.route("/editname", methods=["POST"])
+def editName():
+    data = request.json
+    user_id = data.get("userId")
+
+    if not user_id:
+        return jsonify({"success": False, "message": "Código inválido!"}), 400
+
+    # Consulta ao Firestore para verificar se o usuário existe
+    user_ref = db.collection("users").document(user_id)
+    user_data = user_ref.get()
+
+    if user_data.exists:
+        user_ref.update({"nome": data.get("nome")})
+        return jsonify({"success": True, "message": "Nome alterado com sucesso!"})
+    else:
+        return jsonify({"success": False, "message": "Código inválido!"}), 401
+
+
+
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    user_id = data.get("userId")
+
+    if not user_id:
+        return jsonify({"success": False, "message": "Código inválido!"}), 400
+
+    # Consulta ao Firestore para verificar se o usuário existe
+    user_ref = db.collection("users").document(user_id)
+    user_data = user_ref.get()
+
+    if user_data.exists:
+        return jsonify({"success": True, "message": "Login bem-sucedido!"})
+    else:
+        return jsonify({"success": False, "message": "Código inválido!"}), 401
+    
+
+
+@app.route('/user/<user_id>', methods=['GET'])
+def get_user_data(user_id):
+    try:
+        # Acessa o documento do usuário no Firestore
+        user_ref = db.collection('users').document(user_id)
+        user_doc = user_ref.get()
+
+        if user_doc.exists:
+            user_data = user_doc.to_dict()  # Obtém os dados do usuário
+            cargo = user_data.get('cargo', 'user')  # Defina 'user' como padrão caso não haja cargo
+
+            return jsonify({
+                'success': True,
+                'user': {
+                    'cargo': cargo,
+                    # Adicione outras informações que quiser retornar
+                    'nome': user_data.get('nome', 'N/A'),
+                    'email': user_data.get('email', 'N/A'),
+                }
+            })
+
+        return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 # Rota para adicionar professor
 @app.route('/add_professor', methods=['POST'])

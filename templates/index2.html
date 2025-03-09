@@ -1,0 +1,560 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema de Agendamento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body> 
+    <!--testando-->
+    <div class="container">
+        <h1><i class="fas fa-calendar-alt"></i> Sistema de Agendamento</h1>
+        
+        <div class="section">
+            <h2><i class="fas fa-user-plus"></i> Adicionar Professor</h2>
+            <div>
+                <label for="profNome">Nome:</label>
+                <input type="text" id="profNome" placeholder="Nome do professor">
+            </div>
+            <div>
+                <label>Disponibilidade:</label>
+                <div id="horarioGrid" class="horario-container">
+                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%; padding-bottom: 5px;">
+                    <table class="horario-table">
+                        <thead>
+                            <tr>
+                                <th>Horários</th>
+                                <th>Segunda</th>
+                                <th>Terça</th>
+                                <th>Quarta</th>
+                                <th>Quinta</th>
+                                <th>Sexta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Horários Matutinos -->
+                            <tr class="header-row"><td colspan="6"><i class="fas fa-sun"></i> Período Matutino</td></tr>
+                            <tr><td>07:30 - 08:20</td><td><input type="checkbox" value="Segunda 07:30-08:20"></td><td><input type="checkbox" value="Terça 07:30-08:20"></td><td><input type="checkbox" value="Quarta 07:30-08:20"></td><td><input type="checkbox" value="Quinta 07:30-08:20"></td><td><input type="checkbox" value="Sexta 07:30-08:20"></td></tr>
+                            <tr><td>08:20 - 09:10</td><td><input type="checkbox" value="Segunda 08:20-09:10"></td><td><input type="checkbox" value="Terça 08:20-09:10"></td><td><input type="checkbox" value="Quarta 08:20-09:10"></td><td><input type="checkbox" value="Quinta 08:20-09:10"></td><td><input type="checkbox" value="Sexta 08:20-09:10"></td></tr>
+                            <tr><td>09:10 - 10:00</td><td><input type="checkbox" value="Segunda 09:10-10:00"></td><td><input type="checkbox" value="Terça 09:10-10:00"></td><td><input type="checkbox" value="Quarta 09:10-10:00"></td><td><input type="checkbox" value="Quinta 09:10-10:00"></td><td><input type="checkbox" value="Sexta 09:10-10:00"></td></tr>
+                            <tr><td>10:20 - 11:10</td><td><input type="checkbox" value="Segunda 10:20-11:10"></td><td><input type="checkbox" value="Terça 10:20-11:10"></td><td><input type="checkbox" value="Quarta 10:20-11:10"></td><td><input type="checkbox" value="Quinta 10:20-11:10"></td><td><input type="checkbox" value="Sexta 10:20-11:10"></td></tr>
+                            <tr><td>11:10 - 12:00</td><td><input type="checkbox" value="Segunda 11:10-12:00"></td><td><input type="checkbox" value="Terça 11:10-12:00"></td><td><input type="checkbox" value="Quarta 11:10-12:00"></td><td><input type="checkbox" value="Quinta 11:10-12:00"></td><td><input type="checkbox" value="Sexta 11:10-12:00"></td></tr>
+                            
+                            <!-- Horários Noturnos -->
+                            <tr class="header-row"><td colspan="6"><i class="fas fa-moon"></i> Período Noturno</td></tr>
+                            <tr><td>19:00 - 19:50</td><td><input type="checkbox" value="Segunda 19:00-19:50"></td><td><input type="checkbox" value="Terça 19:00-19:50"></td><td><input type="checkbox" value="Quarta 19:00-19:50"></td><td><input type="checkbox" value="Quinta 19:00-19:50"></td><td><input type="checkbox" value="Sexta 19:00-19:50"></td></tr>
+                            <tr><td>19:50 - 20:40</td><td><input type="checkbox" value="Segunda 19:50-20:40"></td><td><input type="checkbox" value="Terça 19:50-20:40"></td><td><input type="checkbox" value="Quarta 19:50-20:40"></td><td><input type="checkbox" value="Quinta 19:50-20:40"></td><td><input type="checkbox" value="Sexta 19:50-20:40"></td></tr>
+                            <tr><td>20:40 - 21:30</td><td><input type="checkbox" value="Segunda 20:40-21:30"></td><td><input type="checkbox" value="Terça 20:40-21:30"></td><td><input type="checkbox" value="Quarta 20:40-21:30"></td><td><input type="checkbox" value="Quinta 20:40-21:30"></td><td><input type="checkbox" value="Sexta 20:40-21:30"></td></tr>
+                            <tr><td>21:30 - 22:20</td><td><input type="checkbox" value="Segunda 21:30-22:20"></td><td><input type="checkbox" value="Terça 21:30-22:20"></td><td><input type="checkbox" value="Quarta 21:30-22:20"></td><td><input type="checkbox" value="Quinta 21:30-22:20"></td><td><input type="checkbox" value="Sexta 21:30-22:20"></td></tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button type="button" id="selecionarTodos" class="edit"><i class="fas fa-check-double"></i> Selecionar Todos</button>
+                    <button type="button" id="limparSelecao" class="warning"><i class="fas fa-times"></i> Limpar Seleção</button>
+                </div>
+                <input type="hidden" id="profDisp">
+            </div>
+            <button onclick="adicionarProfessor()" style="margin-top: 15px;"><i class="fas fa-plus-circle"></i> Adicionar Professor</button>
+            <div id="resultadoProfessor" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-book"></i> Adicionar Matéria</h2>
+            <div>
+                <label for="matNome">Nome da Matéria:</label>
+                <input type="text" id="matNome" placeholder="Nome da matéria">
+            </div>
+            <div>
+                <label for="matProf">Professor:</label>
+                <select id="matProf">
+                    <option value="">Selecione um professor</option>
+                </select>
+            </div>
+            <button onclick="adicionarMateria()"><i class="fas fa-plus-circle"></i> Adicionar Matéria</button>
+            <div id="resultadoMateria" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-clock"></i> Gerar Horários</h2>
+            <div class="action-buttons">
+                <button onclick="gerarHorarios()"><i class="fas fa-magic"></i> Gerar Horários</button>
+                <button onclick="limparTodosHorarios()" class="warning"><i class="fas fa-eraser"></i> Limpar Todos Horários</button>
+            </div>
+            <div id="resultadoHorarios" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-users"></i> Lista de Professores</h2>
+            <button onclick="listarProfessores()"><i class="fas fa-sync-alt"></i> Atualizar Lista</button>
+            <div id="listaProfessores" style="margin-top: 15px; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%;"></div>
+        </div>
+        
+        <div class="section">
+            <h2><i class="fas fa-list-alt"></i> Lista de Matérias</h2>
+            <button onclick="listarMaterias()"><i class="fas fa-sync-alt"></i> Atualizar Lista</button>
+            <div id="listaMaterias" style="margin-top: 15px; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; max-width: 100%;"></div>
+        </div>
+    </div>
+    
+    <footer style="text-align: center; padding: 20px; margin-top: 30px; background-color: #2c3e50; color: white;">
+        <p>Sistema de Agendamento &copy; 2023</p>
+    </footer>
+
+    <script>
+        // Carregar dados ao iniciar a página
+        window.onload = function() {
+            listarProfessores();
+            listarMaterias();
+            
+            // Configurar eventos para os botões de seleção de horários
+            document.getElementById('selecionarTodos').addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = true);
+            });
+            
+            document.getElementById('limparSelecao').addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+            });
+        };
+        
+        // Função para obter os horários selecionados na grade
+        function obterHorariosSelecionados() {
+            const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]:checked');
+            const horarios = Array.from(checkboxes).map(cb => cb.value);
+            return horarios.join(', ');
+        }
+        
+        function removerProfessor(professorId) {
+            if (!confirm(`Tem certeza que deseja remover o professor ID ${professorId}? Todas as matérias associadas também serão removidas.`)) {
+                return;
+            }
+            
+            fetch(`/remover_professor/${professorId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarNotificacao(data.message, 'success');
+                listarProfessores();
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao remover professor!', 'error');
+            });
+        }
+        
+        function removerMateria(materiaId) {
+            if (!confirm(`Tem certeza que deseja remover a matéria ID ${materiaId}?`)) {
+                return;
+            }
+            
+            fetch(`/remover_materia/${materiaId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarNotificacao(data.message, 'success');
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao remover matéria!', 'error');
+            });
+        }
+        
+        function limparHorario(materiaId) {
+            fetch(`/limpar_horario/${materiaId}`, {
+                method: 'PUT'
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarNotificacao(data.message, 'success');
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao limpar horário!', 'error');
+            });
+        }
+        
+        function limparTodosHorarios() {
+            if (!confirm('Tem certeza que deseja limpar todos os horários?')) {
+                return;
+            }
+            
+            fetch('/listar_materias')
+            .then(response => response.json())
+            .then(data => {
+                const materias = data.materias;
+                let promises = [];
+                
+                materias.forEach(materia => {
+                    if (materia.horario) {
+                        promises.push(
+                            fetch(`/limpar_horario/${materia.id}`, {
+                                method: 'PUT'
+                            })
+                        );
+                    }
+                });
+                
+                return Promise.all(promises);
+            })
+            .then(() => {
+                mostrarNotificacao('Todos os horários foram limpos!', 'success');
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao limpar todos os horários!', 'error');
+            });
+        }
+
+        function adicionarProfessor() {
+            const nome = document.getElementById('profNome').value;
+            const disponibilidade = obterHorariosSelecionados();
+            
+            if (!nome) {
+                mostrarNotificacao('Preencha o nome do professor!', 'error');
+                return;
+            }
+            
+            if (!disponibilidade) {
+                mostrarNotificacao('Selecione pelo menos um horário disponível!', 'error');
+                return;
+            }
+            
+            fetch('/add_professor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    disponibilidade: disponibilidade
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarNotificacao(data.message, 'success');
+                
+                // Limpar campos
+                document.getElementById('profNome').value = '';
+                document.getElementById('profDisp').value = '';
+                document.querySelectorAll('#horarioGrid input[type="checkbox"]').forEach(cb => cb.checked = false);
+                
+                // Atualizar lista de professores
+                listarProfessores();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao adicionar professor!', 'error');
+            });
+        }
+
+        function adicionarMateria() {
+            const nome = document.getElementById('matNome').value;
+            const professorId = document.getElementById('matProf').value;
+            
+            if (!nome || !professorId) {
+                mostrarNotificacao('Preencha todos os campos!', 'error');
+                return;
+            }
+            
+            fetch('/add_materia', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    professor_id: parseInt(professorId)
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarNotificacao(data.message, 'success');
+                
+                // Limpar campos
+                document.getElementById('matNome').value = '';
+                document.getElementById('matProf').value = '';
+                
+                // Atualizar lista de matérias
+                listarMaterias();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao adicionar matéria!', 'error');
+            });
+        }
+
+        function gerarHorarios() {
+            fetch('/gerar_horarios', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('resultadoHorarios');
+                resultDiv.innerHTML = `<p><i class="fas fa-info-circle"></i> ${data.message}</p>`;
+                
+                if (data.alocacao) {
+                    let html = '<table><tr><th>Matéria ID</th><th>Horário</th></tr>';
+                    
+                    Object.entries(data.alocacao).forEach(([materiaId, horario]) => {
+                        html += `<tr><td>${materiaId}</td><td>${horario}</td></tr>`;
+                    });
+                    
+                    html += '</table>';
+                    resultDiv.innerHTML += html;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+                // Atualizar lista de matérias para mostrar horários
+                listarMaterias();
+                mostrarNotificacao('Horários gerados com sucesso!', 'success');
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro ao gerar horários!', 'error');
+            });
+        }
+
+        function listarProfessores() {
+            fetch('/listar_professores')
+            .then(response => response.json())
+            .then(data => {
+                const listaDiv = document.getElementById('listaProfessores');
+                const select = document.getElementById('matProf');
+                
+                // Limpar select, mantendo a primeira opção
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+                
+                if (data.professores.length === 0) {
+                    listaDiv.innerHTML = '<div class="result"><i class="fas fa-info-circle"></i> Nenhum professor cadastrado.</div>';
+                    return;
+                }
+                
+                let html = '<div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;"><table style="width: 100%; min-width: 300px;"><tr><th>ID</th><th>Nome</th><th>Disponibilidade</th><th>Ações</th></tr>';
+                
+                data.professores.forEach(prof => {
+                    html += `<tr>
+                        <td>${prof.id}</td>
+                        <td>${prof.nome}</td>
+                        <td>
+                            <button onclick="visualizarDisponibilidade('${prof.disponibilidade}')" class="edit"><i class="fas fa-eye"></i> Ver</button>
+                        </td>
+                        <td>
+                            <button onclick="removerProfessor(${prof.id})" class="delete"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`;
+                    
+                    // Adicionar ao select
+                    const option = document.createElement('option');
+                    option.value = prof.id;
+                    option.textContent = prof.nome;
+                    select.appendChild(option);
+                });
+                
+                html += '</table></div>';
+                listaDiv.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('listaProfessores').innerHTML = '<div class="result" style="border-left-color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar professores.</div>';
+            });
+        }
+
+        function visualizarDisponibilidade(disponibilidade) {
+            // Limpar todos os checkboxes primeiro
+            const checkboxes = document.querySelectorAll('#horarioGrid input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            
+            // Marcar os horários da disponibilidade
+            const horarios = disponibilidade.split(', ');
+            horarios.forEach(horario => {
+                const checkbox = Array.from(checkboxes).find(cb => cb.value === horario);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            
+            // Rolar até a seção de horários
+            document.getElementById('horarioGrid').scrollIntoView({ behavior: 'smooth' });
+            mostrarNotificacao('Horários do professor carregados na grade!', 'info');
+        }
+        
+        function listarMaterias() {
+            fetch('/listar_materias')
+            .then(response => response.json())
+            .then(data => {
+                const listaDiv = document.getElementById('listaMaterias');
+                
+                if (data.materias.length === 0) {
+                    listaDiv.innerHTML = '<div class="result"><i class="fas fa-info-circle"></i> Nenhuma matéria cadastrada.</div>';
+                    return;
+                }
+                
+                let html = '<div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;"><table style="width: 100%; min-width: 300px;"><tr><th>ID</th><th>Nome</th><th>Professor</th><th>Horário</th><th>Ações</th></tr>';
+                
+                data.materias.forEach(mat => {
+                    let acaoHorario = mat.horario ? 
+                        `<button onclick="limparHorario(${mat.id})" class="warning"><i class="fas fa-eraser"></i></button>` : 
+                        '';
+                    
+                    // Versão compacta do horário para dispositivos móveis
+                    let horarioMobile = '';
+                    if (mat.horario) {
+                        const partes = mat.horario.split(' ');
+                        if (partes.length >= 2) {
+                            const dia = partes[0].substring(0, 3); // Primeiras 3 letras do dia
+                            horarioMobile = `${dia} ${partes[1]}`;
+                        } else {
+                            horarioMobile = mat.horario;
+                        }
+                    }
+                    
+                    let horarioDisplay = mat.horario ? 
+                        `<span style="color: #2ecc71;"><i class="fas fa-check-circle"></i> <span class="horario-completo">${mat.horario}</span><span class="horario-mobile">${horarioMobile}</span></span>` : 
+                        '<span style="color: #e74c3c;"><i class="fas fa-times-circle"></i> <span class="horario-mobile">N/D</span><span class="horario-completo">Não definido</span></span>';
+                    
+                    html += `<tr>
+                        <td>${mat.id}</td>
+                        <td>${mat.nome}</td>
+                        <td>${mat.professor_nome || 'N/D'}</td>
+                        <td>${horarioDisplay}</td>
+                        <td>
+                            <button onclick="removerMateria(${mat.id})" class="delete"><i class="fas fa-trash-alt"></i></button>
+                            ${acaoHorario}
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</table></div>';
+                listaDiv.innerHTML = html;
+                
+                // Adicionar estilo para versão mobile ou desktop do horário
+                const style = document.createElement('style');
+                style.textContent = `
+                    @media (max-width: 768px) {
+                        .horario-completo { display: none; }
+                        .horario-mobile { display: inline; }
+                        /* Reduzir espaçamento entre ícones e texto */
+                        td .fas { margin-right: 2px; }
+                        /* Reduzir padding para botões nas tabelas */
+                        td button { padding: 3px 5px; margin: 1px; }
+                    }
+                    @media (max-width: 480px) {
+                        /* Ajustes extras para telas muito pequenas */
+                        td button { padding: 2px 4px; font-size: 9px; }
+                    }
+                    @media (min-width: 769px) {
+                        .horario-completo { display: inline; }
+                        .horario-mobile { display: none; }
+                    }
+                `;
+                document.head.appendChild(style);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('listaMaterias').innerHTML = '<div class="result" style="border-left-color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar matérias.</div>';
+            });
+        }
+        
+        // Função para mostrar notificações modernas
+        function mostrarNotificacao(mensagem, tipo) {
+            // Remover notificações existentes
+            const notificacoesExistentes = document.querySelectorAll('.notificacao');
+            notificacoesExistentes.forEach(notif => notif.remove());
+            
+            // Criar elemento de notificação
+            const notificacao = document.createElement('div');
+            notificacao.className = 'notificacao';
+            notificacao.style.position = 'fixed';
+            notificacao.style.top = '20px';
+            notificacao.style.right = '20px';
+            notificacao.style.padding = '15px 20px';
+            notificacao.style.borderRadius = '5px';
+            notificacao.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+            notificacao.style.zIndex = '1000';
+            notificacao.style.minWidth = '250px';
+            notificacao.style.transition = 'all 0.3s ease';
+            notificacao.style.animation = 'fadeIn 0.3s ease';
+            
+            // Definir ícone e cor com base no tipo
+            let icone, cor, corTexto;
+            
+            switch(tipo) {
+                case 'success':
+                    icone = '<i class="fas fa-check-circle"></i>';
+                    cor = '#2ecc71';
+                    corTexto = 'white';
+                    break;
+                case 'error':
+                    icone = '<i class="fas fa-exclamation-circle"></i>';
+                    cor = '#e74c3c';
+                    corTexto = 'white';
+                    break;
+                case 'info':
+                    icone = '<i class="fas fa-info-circle"></i>';
+                    cor = '#3498db';
+                    corTexto = 'white';
+                    break;
+                default:
+                    icone = '<i class="fas fa-bell"></i>';
+                    cor = '#f39c12';
+                    corTexto = 'white';
+            }
+            
+            notificacao.style.backgroundColor = cor;
+            notificacao.style.color = corTexto;
+            
+            // Adicionar conteúdo
+            notificacao.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <div style="margin-right: 10px; font-size: 20px;">${icone}</div>
+                    <div>${mensagem}</div>
+                    <div style="margin-left: auto; cursor: pointer;" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar ao DOM
+            document.body.appendChild(notificacao);
+            
+            // Remover após alguns segundos
+            setTimeout(() => {
+                if (notificacao.parentElement) {
+                    notificacao.style.opacity = '0';
+                    notificacao.style.transform = 'translateX(100%)';
+                    setTimeout(() => notificacao.remove(), 300);
+                }
+            }, 5000);
+        }
+        
+        // Adicionar animação CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateX(100%); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

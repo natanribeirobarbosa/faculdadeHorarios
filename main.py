@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, firestore
+import random
 
 
 # Inicializa o Firebase apenas se ainda não estiver inicializado
@@ -145,13 +146,30 @@ def get_users_by_cargo(model):
 
 
 
-#-----------------------------------------rotas Moita-------------------------------------------------------------------------
+#------------------rotas Moita Algumas modificadas por Nathan-kkkkkkk-------------------------------------------------------------
+
 # Rota para adicionar professor
 @app.route('/add_professor', methods=['POST'])
 def add_professor():
     data = request.get_json()
+    # Verifica se o nome foi enviado do front-end
+    if "nome" not in data or not data["nome"].strip():
+        return jsonify({"error": "O campo 'nome' é obrigatório!"}), 400
+
+    # Gera um código aleatório de 7 dígitos
+    codigo_documento = random.randint(1000000, 9999999)
+    
+    # Adiciona o código gerado aos dados do professor
+    data["codigo_documento"] = codigo_documento
+    
+    # Adiciona ao Firestore
     professor_ref = db.collection("professores").add(data)
-    return jsonify({"message": "Professor cadastrado com sucesso!", "id": professor_ref[1].id})
+
+    return jsonify({
+        "message": "Professor cadastrado com sucesso!",
+        "id": professor_ref[1].id,
+        "codigo_documento": codigo_documento
+    })
 
 # Rota para adicionar matéria
 @app.route('/add_materia', methods=['POST'])

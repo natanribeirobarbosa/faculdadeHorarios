@@ -60,11 +60,11 @@ h2>.onlyAdmin{
 <div>
     <h2>Administradores</h2>
     <ul id="admins"></ul>
-    <h2>Professores<span class="onlyAdmin"> Adicionar</span></h2>
+    <h2>Professores<span class="onlyAdmin" onclick="adicionarCoordenador()"> Adicionar</span></h2>
     <ul id="professores"></ul>
-    <h2>Coordenadores<span class="onlyAdmin"> Adicionar</span></h2>
+    <h2>Coordenadores<span class="onlyAdmin" onclick="adicionarProfessor()"> Adicionar</span></h2>
     <ul id="coordenadores"></ul>
-    <h2>Usuarios: (somente leitura)<span class="onlyAdmin"> Adicionar</span></h2>
+    <h2>Usuarios: (somente leitura)<span class="onlyAdmin" onclick="adicionarUsuario()"> Adicionar</span></h2>
     <ul id="usuarios"></ul>
 
 
@@ -84,6 +84,8 @@ h2>.onlyAdmin{
         fetchUserData(userId);
     }
 
+
+
     function fetchUserData(userId) {
         fetch(`http://127.0.0.1:5000/user/${userId}`)
             .then(response => response.json())
@@ -91,11 +93,8 @@ h2>.onlyAdmin{
                 if (data.success){
                     document.getElementById("userName").innerText = data.user.nome;
                     if(data.user.godmode){
-                        console.log(data.user.users)
+                      
                     }
-
-                  
-                
                     const admins = data.user.users.users_by_cargo.admin;
                     const prof = data.user.users.users_by_cargo.professor;
                     const cord = data.user.users.users_by_cargo.coordenador;
@@ -197,6 +196,20 @@ h2>.onlyAdmin{
             nameInput.style.display = "none";
         });
     }
+
+    function adicionarProfessor() {
+        
+    }
+
+    function adicionarCoordenador() {
+        
+    }
+
+    function adicionarUsuario() {
+        
+    }
+
+
 
     function logout() {
         eraseCookie("userId");

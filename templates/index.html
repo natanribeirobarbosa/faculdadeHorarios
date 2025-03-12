@@ -120,10 +120,9 @@
         .then(data => {
             if (data.success) {
                 setCookie("userId", userId, 1);
-                alert("Login bem-sucedido!");
                 fetchUserData(userId); // Carrega os dados do usuário após login
             } else {
-                alert("Código inválido!");
+                window.alert("Código inválido!");
             }
         })
         .catch(error => console.error("Erro no login:", error));
@@ -183,7 +182,6 @@
 
     function logout() {
         eraseCookie("userId");
-        alert("Você saiu!");
         window.location.reload();
     }
 

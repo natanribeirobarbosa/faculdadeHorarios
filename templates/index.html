@@ -107,7 +107,7 @@
         let userId = document.getElementById("userId").value.trim();
 
         if (!userId) {
-            alert("Digite um código válido!");
+            window.alert("Digite um código válido!");
             return;
         }
 
@@ -139,7 +139,7 @@
                     
                     showContentBasedOnCargo(cargo, name); // Exibe conteúdo dependendo do cargo
                 } else {
-                    alert("Erro ao carregar dados do usuário.");
+                    window.alert("Erro ao carregar dados do usuário.");
                 }
             });
     }

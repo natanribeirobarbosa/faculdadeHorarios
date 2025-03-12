@@ -31,7 +31,7 @@ ul li:last-child:after {
     display: none;
 }
 
-h2>.onlyAdmin{
+h2>.onlyAdmins{
     font-size: 13px;
     font-weight: normal;
     color: #007bff;
@@ -58,15 +58,24 @@ h2>.onlyAdmin{
 
 
 <div>
+   
     <h2>Administradores</h2>
     <ul id="admins"></ul>
-    <h2>Professores<span class="onlyAdmin" onclick="adicionarCoordenador()"> Adicionar</span></h2>
+
+    <h2>Professores<span class="onlyAdmins" onclick="abrirPopup('professor')"> Adicionar</span></h2>
     <ul id="professores"></ul>
-    <h2>Coordenadores<span class="onlyAdmin" onclick="adicionarProfessor()"> Adicionar</span></h2>
+
+    <h2>Coordenadores<span class="onlyAdmins" onclick="abrirPopup('coordenador')"> Adicionar</span></h2>
     <ul id="coordenadores"></ul>
-    <h2>Usuarios: (somente leitura)<span class="onlyAdmin" onclick="adicionarUsuario()"> Adicionar</span></h2>
+
+    <h2>Usuários: (somente leitura)<span class="onlyAdmins" onclick="abrirPopup('usuario')"> Adicionar</span></h2>
     <ul id="usuarios"></ul>
 
+    <div id="popup" class="popup">
+        <h3 id="nomePopup">Adicionar Nome</h3>
+        <input type="text" id="nomeInput" placeholder="Digite o nome">
+        <button onclick="adicionarNome()">Enviar</button>
+    </div>
 
 
 
@@ -77,8 +86,9 @@ h2>.onlyAdmin{
 
     window.onload = function() {
         if (!userId) {
-            alert("Você precisa estar logado!");
-            window.location.href = "index.html";
+            window.alert("Você precisa estar logado!");
+            console.log('vc nçao esta autenticado')
+            window.location.href = "/";
             return;
         }
         fetchUserData(userId);
@@ -197,6 +207,11 @@ h2>.onlyAdmin{
         });
     }
 
+
+
+
+
+
     function adicionarProfessor() {
         
     }
@@ -208,6 +223,68 @@ h2>.onlyAdmin{
     function adicionarUsuario() {
         
     }
+
+    let listaAtual = "";
+
+        function abrirPopup(lista) {
+            document.getElementById("nomePopup").innerText='Adicionar '+lista
+            listaAtual = lista;
+            document.getElementById("popup").classList.add("active");
+        }
+
+        function adicionarNome() {
+            let nome = document.getElementById("nomeInput").value.trim();
+            if (nome) {
+
+                //adicionando no front-end
+                let lista = document.getElementById(listaAtual);
+                let item = document.createElement("li");
+                item.textContent = nome+"(?)";
+                //lista.appendChild(item);
+                
+
+                //adcionando no back-end
+                let newName = nome.trim();
+                console.log(newName);
+                console.log(listaAtual);
+                console.log(userId);
+
+                fetch(`/addUser`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nome: newName, cargo: listaAtual, userId})
+                })
+                .then(response => response.json())
+                .then(data => {
+                if (data.success) {
+                   
+                    location.reload();
+                } else {
+                alert("Erro adicionar usuario!");
+                }
+                })
+                .catch(error => console.error("Erro na adição:", error))
+               
+
+
+
+
+            } else {
+                alert("Digite um nome válido.");
+            }
+        }
+
+        function fecharPopup() {
+            document.getElementById("popup").classList.remove("active");
+            document.getElementById("nomeInput").value = "";
+        }
+
+        document.addEventListener("click", function(event) {
+            let popup = document.getElementById("popup");
+            if (!popup.contains(event.target) && !event.target.classList.contains("onlyAdmins")) {
+                fecharPopup();
+            }
+        });
 
 
 

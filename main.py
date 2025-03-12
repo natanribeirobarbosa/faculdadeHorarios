@@ -50,6 +50,36 @@ def editName():
         return jsonify({"success": False, "message": "Código inválido!"}), 401
 
 
+@app.route("/addUser", methods=["POST"])
+def addUser():
+    data = request.json
+    user_id = data.get("userId")  
+    print("User ID recebido:", user_id)
+
+    if not user_id:
+        return jsonify({"success": False, "message": "Código inválido!"}), 400
+
+     # 2️⃣ Buscar usuário no Firestore
+    user_ref = db.collection("users").document(str(user_id))
+    user_doc = user_ref.get()
+
+    if not user_doc.exists or user_doc.to_dict().get("cargo") != "admin":
+        return jsonify({"success": False, "message": "Apenas administradores podem cadastrar usuários!"}), 403
+
+    # Gerando código aleatório
+    codigo_aleatorio = random.randint(1000000, 9999999)
+    print("Código aleatório gerado:", codigo_aleatorio)
+
+    new_user_data = {
+        'nome': data.get("nome"),
+        'cargo': data.get("cargo")
+    }
+
+    # Convertendo código para string antes de salvar no Firestore
+    user_ref = db.collection("users").document(str(codigo_aleatorio))
+    user_ref.set(new_user_data)
+
+    return jsonify({"success": True, "message": "Usuário cadastrado com sucesso!"}), 200
 
 
 

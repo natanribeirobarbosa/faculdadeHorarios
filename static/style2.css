@@ -93,3 +93,50 @@ button:hover {
 .logout:hover {
   background: rgb(126, 0, 0);
 }
+
+
+
+
+
+
+
+
+.popup {
+  position: fixed;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background: white;
+  padding: 20px;
+  box-shadow: 0px 0px 27px #00000099;
+  border-radius: 8px;
+  text-align: center;
+  transition: top 0.4s ease-in-out;
+}
+.popup input {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.popup button {
+  background: blue;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 4px;
+}
+.popup button:hover {
+  background: darkblue;
+}
+.popup.active {
+  top: 50%;
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%);
+}

@@ -39,20 +39,15 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            text-align: center;
         }
         button:hover {
             background: #0056b3;
         }
-        button{
-        display: block;
-        width: 100%;
-        padding: 10px;
-        text-align: center;
-        }
         
-        .btn{
+   /*     .btn{
             display: none;
-        }
+        }*/
 
         .btn a{
         display: block;
@@ -70,7 +65,7 @@
             margin-top: 20px;
             background: red;
         }
-        .admin-section, .user-section {
+        .admin-section, .user-section, .professor-section{
             display: none;
         }
 
@@ -87,33 +82,26 @@
     </div>
 
     <!-- Sessões que mudam de acordo com o cargo -->
-    <div class="admin-section">
-        <h3 id="titleAdm"></h3>
-        <p id="pAdmin"></p>
-        <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
-    </div>
     <div class="user-section">
         <h3 id="titleUser"></h3>
         <p id="pUser"></p>
         <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
     </div>
-    <div class="professor-section">
-        <h3 id="titleProfessor"></h3>
-        <p id="pProfessor"></p>
-        <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
-    </div>
+    
 </div>
 
 <script>
     // Verifica se há um login salvo
     window.onload = function() {
+        document.getElementById("btnDashboard").style.display = "none";
+
         let userId = getCookie("userId");
         if (userId) {
-            document.getElementById('login').style.display="none"
             fetchUserData(userId); // Carrega os dados do usuário já logado
         }
     }
-    
+
+  
 
     function login() {
         let userId = document.getElementById("userId").value.trim();
@@ -159,17 +147,16 @@
 
     function showContentBasedOnCargo(cargo, name) {
         // Esconde todas as seções primeiro
-        document.querySelector('.admin-section').style.display = 'none';
+        
         document.querySelector('.user-section').style.display = 'none';
-        document.querySelector('.professor-section').style.display = 'none';
         document.getElementById('login').style.display="none"
         document.getElementById("btnDashboard").style.display = "block";
 
         // Exibe a seção correspondente ao cargo
         if (cargo == 'admin') {
-            document.querySelector('.admin-section').style.display = 'block';
-            document.getElementById('titleAdm').innerHTML = 'Bem vindo '+name+'!'
-            document.getElementById('pAdmin').innerHTML = 'Sendo ADM, aqui você pode gerenciar tudo!'
+            document.querySelector('.user-section').style.display = 'block';
+            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+            document.getElementById('pUser').innerHTML = 'Sendo ADM, aqui você pode gerenciar tudo!'
             
         } else if (cargo == 'user') {
             document.querySelector('.user-section').style.display = 'block';
@@ -178,9 +165,15 @@
            
             
         }else if(cargo == 'professor') {
-            document.querySelector('.professor-section').style.display = 'block';
-            document.getElementById('titleProfessor').innerHTML = 'Bem vindo '+name+'!'
-            document.getElementById('pProfessor').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
+            document.querySelector('.user-section').style.display = 'block';
+            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+            document.getElementById('pUser').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
+         
+          
+        }else if(cargo == 'coordenador') {
+            document.querySelector('.user-section').style.display = 'block';
+            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+            document.getElementById('pUser').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
          
           
         }else{

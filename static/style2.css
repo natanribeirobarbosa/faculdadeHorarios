@@ -110,7 +110,6 @@ h1 span, h2 span{
   text-overflow: clip;
  
   max-height: 93px; /* Inicialmente oculto */
-  border-bottom: 1px solid black;
   transition: max-height 400ms ease-in-out, opacity 600ms ease-in-out;
 }
 
@@ -119,7 +118,6 @@ h1 span, h2 span{
   overflow: visible;
   opacity: 1;
   transition: max-height 400ms ease-in-out, opacity 600ms ease-in-out;
-  border-bottom: 1px solid black;
 }
 
 .popup {
@@ -160,4 +158,22 @@ h1 span, h2 span{
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%);
+}
+
+.infos{
+  width: 100%;
+  max-width: 300px;
+  border-left: 1px solid #bcbcbc;
+  border-right: 2px solid #727272;
+  border-bottom: 2px solid #727272;
+  padding: 20px;
+  margin-top: 10px;
+  background-color: #ffffff6b;
+}
+
+.divCursos ul{
+  display: flex;
+    flex-direction: column;
+    gap: 10px;
+
 }

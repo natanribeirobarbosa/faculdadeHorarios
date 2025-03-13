@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
     <script src="{{ url_for('static', filename='dataFunctions.js') }}"></script>
-
+    <script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
     <style>
         #admins {
-  list-style-type: none; /* Remove os bullets */
+  /*list-style-type: none; /* Remove os bullets */
   padding: 0; /* Remove o padding */
   display: flex; /* Alinha os <li> horizontalmente */
   flex-wrap: wrap; /* Permite quebrar linha se necessário */
@@ -18,7 +18,7 @@
 
 ul li {
   margin-right: 10px; /* Espaço entre os itens */
-  display: block;
+  display: inline;
   font-size: 13px;
 }
 
@@ -66,7 +66,7 @@ h2>.negative{
 </div>
 
 
-    <div class="hidenItems" id="cargos">
+    <div class="hidenItems infos" id="cargos">
         <h1>Cargos <span onclick="toggleSection('cargos')">mostrar</span></h1>
         <h2>Administradores</h2>
         <ul id="admins"></ul>
@@ -87,11 +87,7 @@ h2>.negative{
         </h2>
         <ul id="usuarios"></ul>
 
-        <div id="popup" class="popup">
-            <h3 id="nomePopup">Adicionar Nome</h3>
-            <input type="text" id="nomeInput" placeholder="Digite o nome">
-            <button id="sendButton">Enviar</button>
-        </div>
+    
 
 
         
@@ -100,12 +96,15 @@ h2>.negative{
 
     </div>
 
+    <div id="popup" class="popup">
+            <h3 id="nomePopup">Adicionar Nome</h3>
+            <input type="text" id="nomeInput" placeholder="Digite o nome">
+            <button id="sendButton">Enviar</button>
+    </div>
 
-
-    <div class="hidenItems" id="cursos">
+    <div class="hidenItems infos divCursos" id="cursos">
         <h1>Cursos e disciplinas <span onclick="toggleSection('cursos')">mostrar</span></h1>
-        <h2></h2>
-        <ul id="admins"></ul>
+      
 
         
       
@@ -126,7 +125,8 @@ h2>.negative{
             return;
         }
         fetchUserData(userId);
-        fetchAllUserData(userId)
+        fetchAllUserData(userId);
+        fetchAllCurses()
     }
 
     function toggleSection(id) {
@@ -211,14 +211,7 @@ h2>.negative{
 
     let listaAtual = "";
 
-        function abrirPopup(lista) {
-            document.getElementById("nomePopup").innerText='Adicionar '+lista
-            listaAtual = lista;
-            document.getElementById("popup").classList.add("active");
-            document.getElementById('nomeInput').placeholder = 'Digite o nome do'+lista;
-            document.getElementById("sendButton").addEventListener("click", adicionarNome);
-
-        }
+       
 
         function adicionarNome() {
             let nome = document.getElementById("nomeInput").value.trim();
@@ -262,18 +255,6 @@ h2>.negative{
             }
         }
 
-        function fecharPopup() {
-            document.getElementById("popup").classList.remove("active");
-            document.getElementById("nomeInput").value = "";
-        }
-
-        function popUpDeletar(cargo) {
-            document.getElementById("nomePopup").innerText='Deletar '+cargo
-            document.getElementById("popup").classList.add("active");
-            document.getElementById('nomeInput').placeholder = 'Código de acesso do '+cargo;
-            document.getElementById("sendButton").addEventListener("click", deletarNome);
-
-        }
 
         function deletarNome(){
             let cod = document.getElementById("nomeInput").value

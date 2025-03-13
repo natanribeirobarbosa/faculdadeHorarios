@@ -234,6 +234,43 @@ def get_users_by_cargo(model):
     except Exception as e:
         return {'success': False, 'message': str(e)}
 
+#função que retorna todos os cursos
+@app.route('/allcourses', methods=['GET'])
+def get_all_courses():
+    try:
+        # Referência à coleção "cursos" no Firestore
+        cursos_ref = db.collection('cursos')
+        cursos = cursos_ref.get()
+        
+        cursos_list = []
+
+        for curso in cursos:
+            curso_data = curso.to_dict()
+            
+            if not curso_data:
+                continue  # Pula cursos vazios
+            
+            # Buscar dados das disciplinas referenciadas
+            disciplinas_lista = []
+            for ref in curso_data.get("disciplinas", []):
+                if isinstance(ref, firestore.DocumentReference):  # Garante que é uma referência válida
+                    disciplina_doc = ref.get()
+                    if disciplina_doc.exists:
+                        disciplinas_lista.append(disciplina_doc.to_dict())  # Converte em JSON
+            
+            cursos_list.append({
+                "nome": curso_data.get("nome", "Desconhecido"),
+                "modalidade": curso_data.get("modalidade", "Não informado"),
+                "disciplinas": disciplinas_lista  # Retorna os dados completos das disciplinas
+            })
+
+        return jsonify({"success": True, "cursos": cursos_list})
+
+    except Exception as e:
+        print("Erro ao buscar cursos:", str(e))  # Log no console
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 
 
 #------------------rotas Moita Algumas modificadas por Nathan-kkkkkkk-------------------------------------------------------------

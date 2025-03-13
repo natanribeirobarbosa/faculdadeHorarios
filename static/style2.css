@@ -3,7 +3,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: auto;
   background-color: #f4f4f4;
   flex-direction: column;
 }
@@ -17,6 +17,7 @@ h2{
   font-size: 15px;
 }
 .container {
+  margin-top: 100px;
   background: white;
   padding: 20px;
   border-radius: 8px;
@@ -96,10 +97,30 @@ button:hover {
 
 
 
+h1 span, h2 span{
+  font-size: 13px;
+  color: #007bff;
+  cursor: pointer;
+}
 
 
+.hidenItems {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+ 
+  max-height: 93px; /* Inicialmente oculto */
+  border-bottom: 1px solid black;
+  transition: max-height 400ms ease-in-out, opacity 600ms ease-in-out;
+}
 
-
+.showedItems {
+  max-height: 500px; /* Defina um valor suficiente para conter o conteúdo */
+  overflow: visible;
+  opacity: 1;
+  transition: max-height 400ms ease-in-out, opacity 600ms ease-in-out;
+  border-bottom: 1px solid black;
+}
 
 .popup {
   position: fixed;

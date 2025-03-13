@@ -64,21 +64,39 @@ def addUser():
     user_doc = user_ref.get()
 
     if not user_doc.exists or user_doc.to_dict().get("cargo") != "admin":
-        return jsonify({"success": False, "message": "Apenas administradores podem cadastrar usuários!"}), 403
+        return jsonify({"success": False, "message": "Erro de validação!"}), 403
 
-    # Gerando código aleatório
-    codigo_aleatorio = random.randint(1000000, 9999999)
-    print("Código aleatório gerado:", codigo_aleatorio)
 
-    new_user_data = {
-        'nome': data.get("nome"),
-        'cargo': data.get("cargo")
-    }
 
-    # Convertendo código para string antes de salvar no Firestore
-    user_ref = db.collection("users").document(str(codigo_aleatorio))
-    user_ref.set(new_user_data)
+    user_ref = db.collection("users").document(str(user_id))
+    user_doc = user_ref.get()
+    return jsonify({"success": True, "message": "Usuário cadastrado com sucesso!"}), 200
 
+
+
+
+#rota deletar usuario
+@app.route("/deleteUser", methods=["POST"])
+def deleteUser():
+    data = request.json
+    user_id = data.get("userId")
+    user_deleted = data.get("id")   
+
+    if not user_id:
+        return jsonify({"success": False, "message": "Código inválido!"}), 400
+
+     
+    user_ref = db.collection("users").document(str(user_id))
+    user_doc = user_ref.get()
+     
+     # 2️⃣ Buscar usuário no Firestore
+    user_ref2 = db.collection("users").document(str(user_deleted))
+    user_doc2 = user_ref2.get()
+
+    if not user_doc.exists or user_doc.to_dict().get("cargo") != "admin" or not user_doc2.exists:
+        return jsonify({"success": False, "message": "Erro de validação!"}), 403
+
+    db.collection("users").document(user_deleted).delete()
     return jsonify({"success": True, "message": "Usuário cadastrado com sucesso!"}), 200
 
 
@@ -100,36 +118,78 @@ def login():
     else:
         return jsonify({"success": False, "message": "Código inválido!"}), 401
     
-
+#função que retorna informações basicas do usuario
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_data(user_id):
     try:
         # Acessa o documento do usuário no Firestore
         user_ref = db.collection('users').document(user_id)
         user_doc = user_ref.get()
-
+        
         if user_doc.exists:
-            user_data = user_doc.to_dict()  # Obtém os dados do usuário
-            cargo = user_data.get('cargo', 'user')  # Defina 'user' como padrão caso não haja cargo
-
+            user_data = user_doc.to_dict()  # Obtém os dados do usuário como um dicionário
             return jsonify({
                 'success': True,
                 'user': {
-                    'cargo': cargo,
-                    # Adicione outras informações que quiser retornar
-                    'nome': user_data.get('nome', 'N/A'),
-                    'email': user_data.get('email', 'N/A'),
-                    'godmode': user_data.get('godmode', False),
-                    'users':get_users_by_cargo(cargo)
+                    'nome': user_data.get('nome', '?'),  # Evita erro se o campo 'nome' não existir
+                    'cargo': user_data.get('cargo', 'none'),  # Evita erro se o campo 'cargo' não existir
                 }
             })
+        else:
+            return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-        return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+
+#função que retorna todos os usuarios separados por cargos
+@app.route('/allusers/<user_id>', methods=['GET'])
+def get_all_users(user_id):
+    try:
+        # Obtém os dados do usuário pelo ID
+        user_ref = db.collection('users').document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+
+        user_data = user_doc.to_dict()
+        cargo = user_data.get('cargo', 'user')  # Define 'user' como padrão se não houver cargo
+        
+        # Busca todos os usuários agrupados por cargo
+        users_by_cargo = {
+            "admin": [],
+            "professor": [],
+            "coordenador": [],
+            "user": []
+        }
+
+        users_ref = db.collection('users').stream()
+        for doc in users_ref:
+            user_info = doc.to_dict()
+            user_role = user_info.get("cargo", "user")
+            
+            if user_role in users_by_cargo:
+                users_by_cargo[user_role].append({
+                    "id": doc.id,
+                    "nome": user_info.get("nome", "?")
+                })
+
+        return jsonify({
+            'success': True,
+            'user': {
+                'nome': user_data.get('nome', '?'),
+                'cargo': cargo,
+                'users': {
+                    'users_by_cargo': users_by_cargo
+                }
+            }
+        })
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+#função que retorna a tabela completa de usuarios
 def get_users_by_cargo(model):
     try:
         # Acessa toda a coleção 'users'

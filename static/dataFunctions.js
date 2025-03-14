@@ -10,6 +10,19 @@ function fetchUserData(userId) {
             if (data.success){
                 document.getElementById("userName").innerText = data.user.nome;
                 document.getElementById("userCargo").innerText = data.user.cargo;
+                if(data.user.cargo == "professor"){
+                    document.getElementById("userCargo").innerHTML += "<br>licenciaturas:"
+                    if(typeof data.user.licenciaturas !== "undefined" && typeof data.user.licenciaturas !== null){
+                        console.log(data.user.licenciaturas
+                        )
+
+                        data.user.licenciaturas.forEach(element => {
+                            console.log(element)
+                            document.getElementById("userCargo").innerHTML += '<br>- '+element
+                        });
+                    }
+               }
+               
                
             } else {
                 alert("Erro ao carregar usuário.");

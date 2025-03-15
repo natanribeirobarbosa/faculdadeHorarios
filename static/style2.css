@@ -75,26 +75,35 @@ animation: shake 0.5s ease infinite;
   cursor: pointer;
   font-size: 18px;
 }
-button {
+button{
   margin-top: 10px;
   padding: 10px;
   width: 100%;
-  background: #007bff;
+  
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
-button:hover {
+.positive:hover {
   background: #0056b3;
 }
-.logout {
+
+.positive{
+  background: #007bff;
+}
+button.negative {
   background: red;
 }
-.logout:hover {
+button.negative:hover {
   background: rgb(126, 0, 0);
 }
 
+
+#inputs{
+  display: flex;
+    flex-direction: column;
+}
 
 
 h1 span, h2 span{
@@ -114,7 +123,7 @@ h1 span, h2 span{
 }
 
 .showedItems {
-  max-height: 500px; /* Defina um valor suficiente para conter o conteúdo */
+  max-height: 10000px; /* Defina um valor suficiente para conter o conteúdo */
   overflow: visible;
   opacity: 1;
   transition: max-height 400ms ease-in-out, opacity 600ms ease-in-out;
@@ -137,12 +146,11 @@ h1 span, h2 span{
   width: 100%;
   padding: 8px;
   margin: 10px 0;
-  border: 1px solid #ccc;
+  border: 0.5px solid #212121;
   border-radius: 4px;
   box-sizing: border-box;
 }
 .popup button {
-  background: blue;
   color: white;
   border: none;
   padding: 10px;
@@ -150,9 +158,7 @@ h1 span, h2 span{
   width: 100%;
   border-radius: 4px;
 }
-.popup button:hover {
-  background: darkblue;
-}
+
 .popup.active {
   top: 50%;
   opacity: 1;
@@ -163,13 +169,14 @@ h1 span, h2 span{
 .infos{
   width: 100%;
   max-width: 300px;
-  border-left: 1px solid #bcbcbc;
-  border-right: 2px solid #727272;
-  border-bottom: 2px solid #727272;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
   padding: 20px;
-  margin-top: 10px;
+  margin-top: 20px;
   background-color: #ffffff6b;
 }
+
+
 
 .divCursos ul{
   display: flex;

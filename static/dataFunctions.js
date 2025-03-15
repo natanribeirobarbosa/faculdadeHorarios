@@ -104,7 +104,7 @@ function fetchAllUserData(userId) {
 
 //função que busca todos os cursos e disciplinas
 function fetchAllCurses() {
-    fetch('http://127.0.0.1:5000/allcourses')
+    fetch('/allcourses')
     .then(response => response.json())
     .then(data => {
         if (data.success) {
@@ -113,15 +113,18 @@ function fetchAllCurses() {
             data.cursos.forEach(curso => {
                 // Criando o título do curso (h2)
                 const cursoTitle = document.createElement("h2");
-                cursoTitle.innerHTML = curso.nome+`<span class="onlyAdmins" onclick="abrirPopup('matéria')"> Adicionar</span><span class="onlyAdmins negative" onclick="popUpDeletar('matéria')"> Deletar</span>`
+                cursoTitle.innerHTML = curso.nome+`<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria','${curso.id}')"> Adicionar</span><span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria','${curso.id}')"> Deletar</span>`
+
+
                 cursosContainer.appendChild(cursoTitle);
 
+                
                 // Criando a lista de disciplinas (ul)
                 const disciplinaList = document.createElement("ul");
 
                 curso.disciplinas.forEach(disciplina => {
                     const disciplinaItem = document.createElement("li");
-                    disciplinaItem.innerHTML = '<strong>'+disciplina.nome+'</strong>'+'<br>Carga horária: '+disciplina.carga+'h <br>modalidade: '+disciplina.modalidade
+                    disciplinaItem.innerHTML = '<strong>'+disciplina.nome+'</strong><span class="onlyAdmins">('+disciplina.id+')</span>'+'<br>Carga horária: '+disciplina.carga+'h <br>modalidade: '+disciplina.modalidade
                     disciplinaList.appendChild(disciplinaItem);
                 });
 

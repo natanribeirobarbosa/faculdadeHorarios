@@ -70,7 +70,7 @@ def add_user():
                 break  # Sai do loop se o código for único
 
         # Criando um novo usuário no Firestore
-        user_ref = db.collection("users").document('999991')
+        user_ref = db.collection("users").document(user_code)
         user_ref.set({
             "nome": nome,
             "cargo": cargo,
@@ -123,29 +123,63 @@ def login():
         return jsonify({"success": True, "message": "Login bem-sucedido!"})
     else:
         return jsonify({"success": False, "message": "Código inválido!"}), 401
-    
-#função que retorna informações basicas do usuario
+        
+# Função que retorna informações básicas do usuário
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_data(user_id):
     try:
         # Acessa o documento do usuário no Firestore
         user_ref = db.collection('users').document(user_id)
+       
         user_doc = user_ref.get()
-        
+        print(user_doc) 
         if user_doc.exists:
             user_data = user_doc.to_dict()  # Obtém os dados do usuário como um dicionário
-            return jsonify({
+            
+            # Monta o objeto de resposta inicial
+            response = {
                 'success': True,
                 'user': {
                     'nome': user_data.get('nome', '?'),  # Evita erro se o campo 'nome' não existir
-                    'cargo': user_data.get('cargo', 'none'),  # Evita erro se o campo 'cargo' não existir
-                    'licenciaturas': user_data.get('licenciaturas', "undefined")
+                    'cargo': user_data.get('cargo', 'none')  # Evita erro se o campo 'cargo' não existir
                 }
-            })
+            }
+
+            # Se o usuário for professor, buscar as licenciaturas e disciplinas
+            if user_data.get('cargo', '').lower() == 'professor':
+                licenciaturas_refs = user_data.get('licenciaturas', [])
+                print('LICENCIATURAS')
+                print(licenciaturas_refs)
+                print('LICENCIATURAS')
+
+                if isinstance(licenciaturas_refs, list):
+                    licenciaturas = set()  # Usar um conjunto para evitar duplicatas
+                    
+
+                for curso_ref in licenciaturas_refs:
+                    if isinstance(curso_ref, firestore.DocumentReference):  # Verifica se é uma referência válida
+                        curso_doc = curso_ref.get()
+                        print(curso_doc)
+
+                    if curso_doc.exists:
+                        curso_data = curso_doc.to_dict()
+                        print(curso_data)
+                        nome_disciplina = curso_data.get('nome', None)  # Obtemos o nome da disciplina
+
+                    if nome_disciplina:  # Verifica se o nome da disciplina não é None ou vazio
+                        licenciaturas.add(nome_disciplina)  # Adiciona o nome como um único item no set
+                #print(licenciaturas)
+
+            response['user']['disciplinas'] = list(licenciaturas)  # Converte para lista para o JSON
+
+            
+            return jsonify(response)
+        
         else:
             return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+    
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'message': f"Erro ao carregar dados do usuário: {str(e)}"}), 500
 
 
 #função que retorna todos os usuarios separados por cargos

@@ -4,13 +4,16 @@
 
 //função que busca nome e cargo atual
 function fetchUserData(userId) {
-    fetch(`http://127.0.0.1:5000/user/${userId}`)
+    fetch(`/user/${userId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success){
+                console.log('sucesso')
                 document.getElementById("userName").innerText = data.user.nome;
                 document.getElementById("userCargo").innerText = data.user.cargo;
                 if(data.user.cargo == "professor"){
+                    
+
                     document.getElementById("userCargo").innerHTML += "<br>licenciaturas:"
                     if(typeof data.user.licenciaturas !== "undefined" && typeof data.user.licenciaturas !== null){
                         console.log(data.user.licenciaturas
@@ -21,6 +24,8 @@ function fetchUserData(userId) {
                             document.getElementById("userCargo").innerHTML += '<br>- '+element
                         });
                     }
+                    renderCursosIndex()
+                    console.log('resfdsffd')
                }
                
                
@@ -43,8 +48,11 @@ function fetchAllUserData(userId) {
                     admin = true
                 }
 
-       
                 
+                document.getElementById('administradoresTitle').innerText += ' ('+data.user.users.users_by_cargo.admin.length+')'
+                document.getElementById('professoresTitle').innerText += ' ('+data.user.users.users_by_cargo.professor.length+')'
+                document.getElementById('coordenadoresTitle').innerText += ' ('+data.user.users.users_by_cargo.coordenador.length+')'
+                document.getElementById('usuariosTitle').innerText += ' ('+data.user.users.users_by_cargo.user.length+')'
 
                 
                 const admins = data.user.users.users_by_cargo.admin;
@@ -104,45 +112,18 @@ function fetchAllUserData(userId) {
 
 //função que busca todos os cursos e disciplinas
 function fetchAllCurses() {
-    fetch('/allcourses')
+    return fetch('/allcourses')
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const cursosContainer = document.getElementById("cursos");
-
-            data.cursos.forEach(curso => {
-                // Criando o título do curso (h2)
-                const cursoTitle = document.createElement("h2");
-                cursoTitle.innerHTML = curso.nome+`<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria','${curso.id}')"> Adicionar</span><span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria','${curso.id}')"> Deletar</span>`
-
-
-                cursosContainer.appendChild(cursoTitle);
-
-                
-                // Criando a lista de disciplinas (ul)
-                const disciplinaList = document.createElement("ul");
-
-                curso.disciplinas.forEach(disciplina => {
-                    const disciplinaItem = document.createElement("li");
-                    disciplinaItem.innerHTML = '<strong>'+disciplina.nome+'</strong><span class="onlyAdmins">('+disciplina.id+')</span>'+'<br>Carga horária: '+disciplina.carga+'h <br>modalidade: '+disciplina.modalidade
-                    disciplinaList.appendChild(disciplinaItem);
-                });
-
-                cursosContainer.appendChild(disciplinaList);
-
-                if(admin == true){
-                    var elementos = document.querySelectorAll('.onlyAdmins');
-                                    elementos.forEach(function(elemento) {
-                                        elemento.style.display = 'inline';
-                                
-                                });
-
-                    
-                }
-            });
+            return data.cursos; // Retorna os cursos para outra função
         } else {
             alert("Erro ao carregar cursos.");
+            return []; // Retorna um array vazio caso haja erro
         }
     })
-    .catch(error => console.error("Erro ao buscar cursos:", error));
+    .catch(error => {
+        console.error("Erro ao buscar cursos:", error);
+        return []; // Retorna um array vazio em caso de erro
+    });
 }

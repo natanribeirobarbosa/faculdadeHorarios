@@ -68,21 +68,21 @@ h2>.negative{
 
     <div class="hidenItems infos" id="cargos">
         <h1>Cargos <span onclick="toggleSection('cargos')">mostrar</span></h1>
-        <h2>Administradores</h2>
+        <h2 id="administradoresTitle">Administradores</h2>
         <ul id="admins"></ul>
 
-        <h2>Professores<span class="onlyAdmins" onclick="abrirPopup('adicionar','professor')"> Adicionar</span>
+        <h2 id = "professoresTitle">Professores<span class="onlyAdmins" onclick="abrirPopup('adicionar','professor')"> Adicionar</span>
             <span class="onlyAdmins negative" onclick="abrirPopup('deletar','professor')"> Deletar</span>
         
         </h2>
         <ul id="professores"></ul>
 
-        <h2>Coordenadores<span class="onlyAdmins" onclick="abrirPopup('adicionar','coordenador')"> Adicionar</span>
+        <h2 id= "coordenadoresTitle">Coordenadores<span class="onlyAdmins" onclick="abrirPopup('adicionar','coordenador')"> Adicionar</span>
             <span class="onlyAdmins negative" onclick="abrirPopup('deletar','coordenador')"> Deletar</span>
         </h2>
         <ul id="coordenadores"></ul>
 
-        <h2>Usuários: (somente leitura)<span class="onlyAdmins" onclick="abrirPopup('adicionar','user')"> Adicionar</span>
+        <h2 id= "usuariosTitle">Usuários: (somente leitura)<span class="onlyAdmins" onclick="abrirPopup('adicionar','user')"> Adicionar</span>
             <span class="onlyAdmins negative" onclick="abrirPopup('deletar','user')"> Deletar</span>
         </h2>
         <ul id="usuarios"></ul>
@@ -119,18 +119,15 @@ h2>.negative{
         }
         fetchUserData(userId);
         fetchAllUserData(userId);
-        fetchAllCurses()
+        fetchAllCurses().then(cursos => {
+            renderCursos(cursos); // Passa os dados para renderizar no front-end
+        });
     }
 
     function toggleSection(id) {
         var element = document.getElementById(id);
         element.classList.toggle('hidenItems');
         element.classList.toggle('showedItems');
-
-
-      
-
-        
     }
 
 

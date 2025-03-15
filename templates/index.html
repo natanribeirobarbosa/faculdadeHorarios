@@ -90,6 +90,10 @@
     
 </div>
 
+<div id="container">
+
+</div>
+
 <script>
     // Verifica se há um login salvo
     window.onload = function() {
@@ -136,7 +140,6 @@
                 if (data.success) {
                     const cargo = data.user.cargo; // Supondo que o retorno seja { cargo: 'admin' ou 'user' }
                     const name = data.user.nome;
-                    
                     showContentBasedOnCargo(cargo, name); // Exibe conteúdo dependendo do cargo
                 } else {
                     window.alert("Erro ao carregar dados do usuário.");

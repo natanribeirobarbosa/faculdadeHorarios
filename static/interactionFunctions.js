@@ -258,3 +258,75 @@ async function deletarMateria() {
     }
 }
 
+//-----------------------------------dashboard---------------------
+
+// Função que renderiza os cursos no front-end
+function renderCursos(cursos) {
+    const cursosContainer = document.getElementById("cursos");
+
+    cursos.forEach(curso => {
+        // Criando o título do curso (h2)
+        const cursoTitle = document.createElement("h2");
+        cursoTitle.innerHTML = curso.nome + ` (${curso.disciplinas.length})` + 
+                               `<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria','${curso.id}')"> Adicionar</span>` + 
+                               `<span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria','${curso.id}')"> Deletar</span>`;
+        cursosContainer.appendChild(cursoTitle);
+
+        // Criando a lista de disciplinas (ul)
+        const disciplinaList = document.createElement("ul");
+
+        curso.disciplinas.forEach(disciplina => {
+            const disciplinaItem = document.createElement("li");
+            disciplinaItem.innerHTML = `<strong>${disciplina.nome}</strong><span class="onlyAdmins">(${disciplina.id})</span><br>Carga horária: ${disciplina.carga}h <br>Modalidade: ${disciplina.modalidade}`;
+            disciplinaList.appendChild(disciplinaItem);
+        });
+
+        cursosContainer.appendChild(disciplinaList);
+
+        if (admin === true) {
+            var elementos = document.querySelectorAll('.onlyAdmins');
+            elementos.forEach(function(elemento) {
+                elemento.style.display = 'inline';
+            });
+        }
+    });
+}
+
+  // Função para organizar e renderizar os cursos na página
+  function renderCursosIndex() {
+    const container = document.getElementById("container");
+
+    // Chama a função fetchAllCurses e espera pelos dados
+    fetchAllCurses().then(cursos => {
+        if (cursos.length === 0) {
+            container.innerHTML = '<p>Não há cursos disponíveis.</p>';
+        } else {
+            cursos.forEach(curso => {
+                // Criar uma div para cada curso
+                const cursoDiv = document.createElement("div");
+                cursoDiv.classList.add("curso");
+
+                // Adicionar título do curso
+                const cursoTitle = document.createElement("h2");
+                cursoTitle.innerHTML = curso.nome + ` (${curso.disciplinas.length})` +
+                    `<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria','${curso.id}')"> Adicionar</span>` + 
+                    `<span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria','${curso.id}')"> Deletar</span>`;
+                cursoDiv.appendChild(cursoTitle);
+
+                // Criar lista de disciplinas
+                const disciplinaList = document.createElement("ul");
+                curso.disciplinas.forEach(disciplina => {
+                    const disciplinaItem = document.createElement("li");
+                    disciplinaItem.innerHTML = `<strong>${disciplina.nome}</strong>` + 
+                        `<span class="onlyAdmins"> (${disciplina.id}) </span><br>` +
+                        `Carga horária: ${disciplina.carga}h <br>Modalidade: ${disciplina.modalidade}`;
+                    disciplinaList.appendChild(disciplinaItem);
+                });
+                cursoDiv.appendChild(disciplinaList);
+
+                // Adicionar o curso à div principal (container)
+                container.appendChild(cursoDiv);
+            });
+        }
+    });
+}

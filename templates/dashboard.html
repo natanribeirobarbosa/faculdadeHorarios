@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
     <script src="{{ url_for('static', filename='dataFunctions.js') }}"></script>
+    <script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
+
     
     <style>
         #admins {
@@ -18,8 +20,10 @@
 
 ul li {
   margin-right: 10px; /* Espaço entre os itens */
-  display: inline;
+
   font-size: 13px;
+  list-style-type: none;
+
 }
 
 ul li:after {
@@ -51,16 +55,20 @@ h2>.negative{
 
 <div class="container">
     <h1>Dashboard</h1>
+    <div>
     <p>Bem-vindo, 
         <span class="editable">
             <span id="userName">Carregando...</span>
             <input type="text" id="nameInput">
             <a id="editButton" style="position: absolute;">✏️</a>
         </span>
-    </p>
-    <p>Seu cargo: 
+        <br>
+        Seu cargo: 
         <span id="userCargo">Carregando...</span>
+
     </p>
+    
+    </div>
     <button id="" class="positive" onclick="window.location.href='/'">Voltar</button>
     <button class="negative" onclick="logout()">Sair</button>
 </div>
@@ -68,6 +76,10 @@ h2>.negative{
 
     <div class="hidenItems infos" id="cargos">
         <h1>Cargos <span onclick="toggleSection('cargos')">mostrar</span></h1>
+        <div id="loadingContainer1">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Carregando...</p>
+        </div>
         <h2 id="administradoresTitle">Administradores</h2>
         <ul id="admins"></ul>
 
@@ -100,8 +112,16 @@ h2>.negative{
             <button id="deletarMateria" class="negative" onclick="deletarMateria(cursoAtual)">Deletar</button>
     </div>
 
-    <div class="hidenItems infos divCursos" id="cursos">
-        <h1>Cursos e disciplinas <span onclick="toggleSection('cursos')">mostrar</span></h1>
+    <div class="hidenItems infos divCursos" id="Cursos">
+        <h1>Cursos e disciplinas <span onclick="toggleSection('Cursos')">mostrar</span></h1>
+
+        <div id="cursos">
+            <div id="loadingContainer2">
+                <div class="spinner"></div>
+                <p id="loadingMessage">Carregando...</p>
+            </div>
+        </div>
+       
     </div>
   
 
@@ -117,11 +137,39 @@ h2>.negative{
             window.location.href = "/";
             return;
         }
-        fetchUserData(userId);
-        fetchAllUserData(userId);
-        fetchAllCurses().then(cursos => {
-            renderCursos(cursos); // Passa os dados para renderizar no front-end
+
+        //função basica de usuario
+        fetchUserData(userId).then(userData => {
+            cargo = userData.cargo
+            if(cargo == 'admin'){
+                document.getElementById("Cursos").style.display = 'block'
+                fetchAllCurses()
+            }
+            
+            updateUserDataInDashboard(userData);
+           
+        })
+        .catch(error => {
+            alert("Erro ao carregar dados do usuário.");
         });
+
+
+        //buscar todos usuarios
+        fetchAllUserData(userId).then(usersData => {
+            renderCargos(usersData);
+            console.log(usersData)
+        })
+        .catch(error => {
+            alert("Erro ao carregar dados dos usuários.");
+        });
+
+        
+
+
+
+
+        
+   
     }
 
     function toggleSection(id) {
@@ -212,6 +260,5 @@ h2>.negative{
         document.cookie = name + "=; Max-Age=-99999999; path=/";
     }
 </script>
-<script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
 </body>
 </html>

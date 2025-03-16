@@ -1,6 +1,9 @@
 let listaAtual = "";
 
 
+
+
+
 //----------------------------POP UPS -----------------------------------------------------------------------------------------
 
 let cursoAtual = null;
@@ -260,9 +263,28 @@ async function deletarMateria() {
 
 //-----------------------------------dashboard---------------------
 
+function updateUserDataInDashboard(userData) {
+    document.getElementById("userName").innerText = userData.nome;
+    document.getElementById("userCargo").innerText = userData.cargo;
+
+    if (userData.cargo === "professor") {
+        document.getElementById("userCargo").innerHTML += "<br>Licenciaturas:";
+
+        if (Array.isArray(userData.licenciaturas) && userData.licenciaturas.length > 0) {
+            userData.licenciaturas.forEach(element => {
+                document.getElementById("userCargo").innerHTML += `<br>- ${element}`;
+            });
+        }
+    }
+}
+
 // Função que renderiza os cursos no front-end
 function renderCursos(cursos) {
+    
     const cursosContainer = document.getElementById("cursos");
+
+    document.getElementById('loadingContainer2').style.display = 'none'
+    
 
     cursos.forEach(curso => {
         // Criando o título do curso (h2)
@@ -283,7 +305,7 @@ function renderCursos(cursos) {
 
         cursosContainer.appendChild(disciplinaList);
 
-        if (admin === true) {
+        if (cargo == 'admin') {
             var elementos = document.querySelectorAll('.onlyAdmins');
             elementos.forEach(function(elemento) {
                 elemento.style.display = 'inline';
@@ -292,41 +314,138 @@ function renderCursos(cursos) {
     });
 }
 
-  // Função para organizar e renderizar os cursos na página
-  function renderCursosIndex() {
-    const container = document.getElementById("container");
+//-------------------INDEX -------------------------------------------
 
-    // Chama a função fetchAllCurses e espera pelos dados
-    fetchAllCurses().then(cursos => {
-        if (cursos.length === 0) {
-            container.innerHTML = '<p>Não há cursos disponíveis.</p>';
-        } else {
-            cursos.forEach(curso => {
-                // Criar uma div para cada curso
-                const cursoDiv = document.createElement("div");
-                cursoDiv.classList.add("curso");
+// Função para exibir os cursos na página index
+async function displayCourses(courses) {
+    
+    // Garante que courses seja um array antes de continuar
+    if (!Array.isArray(courses)) {
+        console.warn("Erro: courses não é um array válido!", courses);
+        return; // Evita erro no forEach()
+    }
 
-                // Adicionar título do curso
-                const cursoTitle = document.createElement("h2");
-                cursoTitle.innerHTML = curso.nome + ` (${curso.disciplinas.length})` +
-                    `<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria','${curso.id}')"> Adicionar</span>` + 
-                    `<span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria','${curso.id}')"> Deletar</span>`;
-                cursoDiv.appendChild(cursoTitle);
+    const courseList = document.getElementById("vagas");
+    courseList.innerHTML = ''; // Limpa a lista antes de adicionar os novos cursos
 
-                // Criar lista de disciplinas
-                const disciplinaList = document.createElement("ul");
-                curso.disciplinas.forEach(disciplina => {
-                    const disciplinaItem = document.createElement("li");
-                    disciplinaItem.innerHTML = `<strong>${disciplina.nome}</strong>` + 
-                        `<span class="onlyAdmins"> (${disciplina.id}) </span><br>` +
-                        `Carga horária: ${disciplina.carga}h <br>Modalidade: ${disciplina.modalidade}`;
-                    disciplinaList.appendChild(disciplinaItem);
-                });
-                cursoDiv.appendChild(disciplinaList);
+    courses.forEach(course => {
+        // Cria o bloco de curso
+        const courseBlock = document.createElement("div");
+        courseBlock.classList.add("course-block");
 
-                // Adicionar o curso à div principal (container)
-                container.appendChild(cursoDiv);
-            });
-        }
+        // Adiciona informações do curso
+        const courseInfo = document.createElement("div");
+        courseInfo.classList.add("course-info");
+        courseInfo.innerHTML = `
+            <h2>${course.nome}</h2>
+            <p><strong>Carga Horária:</strong> ${course.carga}h</p>
+            <p><strong>Modalidade:</strong> ${course.modalidade}</p>
+        `;
+        courseBlock.appendChild(courseInfo);
+
+        // Cria o botão "Me Candidatar"
+        const button = document.createElement("button");
+        button.classList.add("positive");
+        button.innerText = "Me Candidatar";
+        button.onclick = () => alert(`Candidatura realizada para ${course.nome}`);
+        courseBlock.appendChild(button);
+
+        // Adiciona o bloco de curso à lista
+        courseList.appendChild(courseBlock);
     });
+
+    // Atualiza o título com o número de cursos
+    document.getElementById('vagasTitle').innerText += ` (${courses.length})`;
+}
+
+
+function showContentBasedOnCargo(cargo, name) {
+    // Esconde todas as seções primeiro
+    
+    document.querySelector('.user-section').style.display = 'none';
+    document.getElementById('login').style.display="none"
+    document.getElementById("btnDashboard").style.display = "block";
+
+    // Exibe a seção correspondente ao cargo
+    if (cargo == 'admin') {
+        document.querySelector('.user-section').style.display = 'block';
+        document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+        document.getElementById('pUser').innerHTML = 'Sendo ADM, aqui você pode gerenciar tudo!'
+        
+        
+    } else if (cargo == 'user') {
+        document.querySelector('.user-section').style.display = 'block';
+        document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+        document.getElementById('pUser').innerHTML = 'Seu cargo não foi definido ainda... contate o ADM!'
+
+       
+        
+    }else if(cargo == 'professor') {
+        document.querySelector('.user-section').style.display = 'block';
+        document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+        document.getElementById('pUser').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
+        return
+     
+      
+    }else if(cargo == 'coordenador') {
+        document.querySelector('.user-section').style.display = 'block';
+        document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
+        document.getElementById('pUser').innerHTML = 'Como coordenador, aqui você pode se definir a grade das matérias!'
+     
+      
+    }else{
+        console.log('erro!')
+    }
+}
+
+
+
+function renderCargos(data) {
+    document.getElementById('loadingContainer1').style.display = 'none'
+
+    // Acessando corretamente os dados
+    const usersByCargo = data; // O JSON já está estruturado corretamente
+
+    // Atualiza os títulos com a contagem correta de usuários por cargo
+    document.getElementById('administradoresTitle').innerText = `Administradores (${usersByCargo.admin.length})`;
+    document.getElementById('professoresTitle').innerText = `Professores (${usersByCargo.professor.length})`;
+    document.getElementById('coordenadoresTitle').innerText = `Coordenadores (${usersByCargo.coordenador.length})`;
+    document.getElementById('usuariosTitle').innerText = `Usuários (${usersByCargo.user.length})`;
+
+    // Obtendo as listas
+    const listAdmin = document.getElementById('admins');
+    const listProf = document.getElementById('professores');
+    const listCord = document.getElementById('coordenadores');
+    const listUsers = document.getElementById('usuarios');
+
+    // Limpa as listas antes de adicionar novos elementos
+    listAdmin.innerHTML = '';
+    listProf.innerHTML = '';
+    listCord.innerHTML = '';
+    listUsers.innerHTML = '';
+
+    // Função auxiliar para adicionar itens à lista
+    function adicionarUsuarios(lista, usuarios, exibirId = false) {
+        usuarios.forEach(usuario => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = usuario.nome + (exibirId ? `<span class="onlyAdmins">(${usuario.id})</span>` : '');
+            lista.appendChild(listItem);
+        });
+    }
+
+    // Adiciona os usuários às listas corretas
+    adicionarUsuarios(listAdmin, usersByCargo.admin);
+    adicionarUsuarios(listProf, usersByCargo.professor, true);
+    adicionarUsuarios(listCord, usersByCargo.coordenador, true);
+    adicionarUsuarios(listUsers, usersByCargo.user, true);
+
+    console.log(data)
+
+    // Verifica se há um administrador logado para exibir IDs
+    if (cargo == 'admin') {
+        console.log('admin')
+        document.querySelectorAll('.onlyAdmins').forEach(elemento => {
+            elemento.style.display = 'inline';
+        });
+    }
 }

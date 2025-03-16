@@ -123,16 +123,16 @@ def login():
         return jsonify({"success": True, "message": "Login bem-sucedido!"})
     else:
         return jsonify({"success": False, "message": "Código inválido!"}), 401
-        
-# Função que retorna informações básicas do usuário
+ # Função que retorna informações básicas do usuário
+
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_data(user_id):
     try:
         # Acessa o documento do usuário no Firestore
         user_ref = db.collection('users').document(user_id)
-       
+
         user_doc = user_ref.get()
-        print(user_doc) 
+        print(user_id)
         if user_doc.exists:
             user_data = user_doc.to_dict()  # Obtém os dados do usuário como um dicionário
             
@@ -140,49 +140,45 @@ def get_user_data(user_id):
             response = {
                 'success': True,
                 'user': {
-                    'nome': user_data.get('nome', '?'),  # Evita erro se o campo 'nome' não existir
-                    'cargo': user_data.get('cargo', 'none')  # Evita erro se o campo 'cargo' não existir
+                    'nome': user_data.get('nome', '?'),
+                    'cargo': user_data.get('cargo', 'none')
                 }
             }
 
             # Se o usuário for professor, buscar as licenciaturas e disciplinas
             if user_data.get('cargo', '').lower() == 'professor':
                 licenciaturas_refs = user_data.get('licenciaturas', [])
-                print('LICENCIATURAS')
-                print(licenciaturas_refs)
-                print('LICENCIATURAS')
+
+                print('LICENCIATURAS:', licenciaturas_refs)  # Debug
 
                 if isinstance(licenciaturas_refs, list):
                     licenciaturas = set()  # Usar um conjunto para evitar duplicatas
-                    
 
-                for curso_ref in licenciaturas_refs:
-                    if isinstance(curso_ref, firestore.DocumentReference):  # Verifica se é uma referência válida
-                        curso_doc = curso_ref.get()
-                        print(curso_doc)
+                    for curso_ref in licenciaturas_refs:
+                        # Verifica se curso_ref é uma referência válida
+                        if isinstance(curso_ref, firestore.DocumentReference):
+                            curso_doc = curso_ref.get()
 
-                    if curso_doc.exists:
-                        curso_data = curso_doc.to_dict()
-                        print(curso_data)
-                        nome_disciplina = curso_data.get('nome', None)  # Obtemos o nome da disciplina
+                            if curso_doc and curso_doc.exists:  # Certifica que curso_doc existe
+                                curso_data = curso_doc.to_dict() or {}  # Garante que curso_data seja um dicionário
 
-                    if nome_disciplina:  # Verifica se o nome da disciplina não é None ou vazio
-                        licenciaturas.add(nome_disciplina)  # Adiciona o nome como um único item no set
-                #print(licenciaturas)
+                                nome_disciplina = curso_data.get('nome')
+                                if nome_disciplina:  # Verifica se o nome não é None ou vazio
+                                    licenciaturas.add(nome_disciplina)  # Adiciona ao set
 
-            response['user']['disciplinas'] = list(licenciaturas)  # Converte para lista para o JSON
-
+                    response['user']['disciplinas'] = list(licenciaturas)  # Converte para lista
             
             return jsonify(response)
         
         else:
             return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
-    
+
     except Exception as e:
+        print("Erro ao carregar dados do usuário:", str(e))  # Debug no terminal
         return jsonify({'success': False, 'message': f"Erro ao carregar dados do usuário: {str(e)}"}), 500
 
 
-#função que retorna todos os usuarios separados por cargos
+# Função que retorna todos os usuários separados por cargos
 @app.route('/allusers/<user_id>', methods=['GET'])
 def get_all_users(user_id):
     try:
@@ -195,7 +191,10 @@ def get_all_users(user_id):
 
         user_data = user_doc.to_dict()
         cargo = user_data.get('cargo', 'user')  # Define 'user' como padrão se não houver cargo
-        
+
+        # Verifica se o usuário é admin
+        is_admin = (cargo == "admin")
+
         # Busca todos os usuários agrupados por cargo
         users_by_cargo = {
             "admin": [],
@@ -208,12 +207,15 @@ def get_all_users(user_id):
         for doc in users_ref:
             user_info = doc.to_dict()
             user_role = user_info.get("cargo", "user")
-            
+
+            # Se o usuário não for admin, não mostrar os IDs dos outros usuários
+            user_data_obj = {
+                "id": doc.id if is_admin else None,  # Esconde o ID se não for admin
+                "nome": user_info.get("nome", "?")
+            }
+
             if user_role in users_by_cargo:
-                users_by_cargo[user_role].append({
-                    "id": doc.id,
-                    "nome": user_info.get("nome", "?")
-                })
+                users_by_cargo[user_role].append(user_data_obj)
 
         return jsonify({
             'success': True,
@@ -315,6 +317,79 @@ def get_all_courses():
     except Exception as e:
         print("Erro ao buscar cursos:", str(e))  # Log no console
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/allprofessorcourses/<user_id>', methods=['GET'])
+def allprofessorcourses(user_id):
+    print('Iniciando a requisição...')
+    try:
+        # Obtém os dados do usuário pelo ID
+        user_ref = db.collection('users').document(user_id)
+        user_doc = user_ref.get()
+        
+        if not user_doc.exists:
+            return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+
+        user_data = user_doc.to_dict()
+        cargo_usuario = user_data.get('cargo', 'user')  # Define 'user' como padrão se não houver cargo
+
+        # Garantir que só um professor tenha acesso a essa rota
+        if cargo_usuario != "professor":
+            return jsonify({"success": False, "message": "Acesso negado, apenas professores podem visualizar cursos."}), 403
+
+        # Busca as licenciaturas do professor
+        licenciaturas_ref = user_data.get('licenciaturas', [])
+        
+        cursos_list = []
+        disciplinas_separadas = []
+
+        for licenciatura_ref in licenciaturas_ref:
+            # Verifica se licenciatura_ref é um DocumentReference
+            if isinstance(licenciatura_ref, firestore.DocumentReference):
+                curso_doc = licenciatura_ref.get()
+
+                if curso_doc.exists:
+                    curso_data = curso_doc.to_dict()
+                    curso_id = curso_doc.id
+
+                    # Pega as disciplinas do curso
+                    disciplinas_lista = curso_data.get('disciplinas', [])
+                    #print(disciplinas_lista)
+                    # Adiciona as disciplinas separadas
+                    for disciplina_ref in disciplinas_lista:
+                      if isinstance(disciplina_ref, firestore.DocumentReference):
+                        disciplina_doc = disciplina_ref.get()
+                        if disciplina_doc.exists:
+                            # Converte o DocumentSnapshot em um dicionário
+                            disciplina_data = disciplina_doc.to_dict()
+
+                            # Agora você pode acessar o campo 'nome' do dicionário
+                            nome_disciplina = disciplina_data.get('nome', 'Nome não disponível')
+                            carga = disciplina_data.get('carga', 'Nome não disponível')
+                            modalidade = disciplina_data.get('nome', 'Nome não disponível')
+
+                            # Adiciona a disciplina à lista com o campo 'nome'
+                            disciplinas_separadas.append({
+                                'nome': nome_disciplina,
+                                'carga': carga,
+                                'modalidade': modalidade
+                            })
+
+                
+
+        # Retorna os cursos e as disciplinas separadas
+        return jsonify({
+            "success": True,
+          
+            "disciplinas": disciplinas_separadas  # Lista separada com todas as disciplinas de todos os cursos
+        })
+
+    except Exception as e:
+        print("Erro ao buscar cursos:", str(e))  # Log no console
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
 
 #adiciona novas disciplinas
 @app.route('/addDiscipline', methods=['POST'])

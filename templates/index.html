@@ -5,92 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema de Agendamento</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+    <script src="{{ url_for('static', filename='dataFunctions.js') }}"></script>
+    <script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px;
-            width: 100%;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        
-   /*     .btn{
-            display: none;
-        }*/
-
-        .btn a{
-        display: block;
-        width: 100%;
-        height: 100%;
-        text-decoration: none;
-        color: white;
-        background-color: transparent; /* Se necessário */
-        padding: 10px; /* Garante que ocupe o espaço */
-        }
-
-
-
-        .logout {
-            margin-top: 20px;
-            background: red;
-        }
-        .admin-section, .user-section, .professor-section{
-            display: none;
-        }
-
+      
 
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="login">
-    <h2>Login</h2>
-    <input type="text" id="userId" placeholder="Digite seu código único">
-    <button onclick="login()">Entrar</button>
+    <div id= 'login'>
+        <!--
+        <h1>Login</h1>
+        <input type="text" id="userId" placeholder="Digite seu código único">
+        <button onclick="login()">Entrar</button>-->
+        <div id="loadingContainer">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Carregando...</p>
+        </div>
     </div>
+    
+
+
 
     <!-- Sessões que mudam de acordo com o cargo -->
     <div class="user-section">
         <h3 id="titleUser"></h3>
         <p id="pUser"></p>
-        <button id="btnDashboard" class="btn" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        <button id="btnDashboard" class="positive" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
     </div>
     
 </div>
 
-<div id="container">
+<div id="course-list">
+    <h2 id="vagasTitle">Disciplinas disponíveis</h2>
+    <section id="vagas">
+        <div id="loadingContainer">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Carregando...</p>
+        </div>
+        
+    </section>
 
 </div>
 
@@ -99,15 +56,34 @@
     window.onload = function() {
         document.getElementById("btnDashboard").style.display = "none";
 
-        let userId = getCookie("userId");
-        if (userId) {
-            fetchUserData(userId); // Carrega os dados do usuário já logado
+        let ID = getCookie("userId");
+        if (ID) {
+            //getCourses(ID); // Carrega os dados do usuário já logado
+            
+            fetchUserData(ID).then(userData => {
+                if(userData.cargo == 'professor'){
+                    getCourses(ID)
+                }
+                showContentBasedOnCargo(userData.cargo, userData.nome)
+            
+            })
+        }else{
+            console.log('fdfdfdf')
+            document.getElementById('login').innerHTML = `<h1>Login</h1>
+        <input type="text" id="userId" placeholder="Digite seu código único">
+        <button class= "positive" onclick="login()">Entrar</button>`
+
+
+        document.getElementById('course-list').innerHTML = ''
         }
+        
     }
 
   
 
     function login() {
+
+
         let userId = document.getElementById("userId").value.trim();
 
         if (!userId) {
@@ -115,7 +91,7 @@
             return;
         }
 
-        fetch("http://127.0.0.1:5000/login", {  // Certifique-se de que o Flask está rodando
+        fetch("/login", {  // Certifique-se de que o Flask está rodando
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId })
@@ -124,7 +100,7 @@
         .then(data => {
             if (data.success) {
                 setCookie("userId", userId, 1);
-                fetchUserData(userId); // Carrega os dados do usuário após login
+                location.reload()
             } else {
                 window.alert("Código inválido!");
             }
@@ -132,56 +108,34 @@
         .catch(error => console.error("Erro no login:", error));
     }
 
-    function fetchUserData(userId) {
+    function fetchUserDataIndex(userid) {
         // Aqui você pode fazer uma chamada para o Flask para obter os dados completos do usuário
-        fetch(`http://127.0.0.1:5000/user/${userId}`)
+        fetch(`/user/${userid}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    console.log(data)
                     const cargo = data.user.cargo; // Supondo que o retorno seja { cargo: 'admin' ou 'user' }
                     const name = data.user.nome;
-                    showContentBasedOnCargo(cargo, name); // Exibe conteúdo dependendo do cargo
+
+                    showContentBasedOnCargo(cargo, name);
+
+                    if(cargo == 'professor'){
+                        console.log('é professor')
+
+                        displayCourses(data.u)
+                    }else{
+                        document.getElementById('course-list').innerHTML = ''
+                    }
+                     // Exibe conteúdo dependendo do cargo
+                    
                 } else {
                     window.alert("Erro ao carregar dados do usuário.");
                 }
             });
     }
 
-    function showContentBasedOnCargo(cargo, name) {
-        // Esconde todas as seções primeiro
-        
-        document.querySelector('.user-section').style.display = 'none';
-        document.getElementById('login').style.display="none"
-        document.getElementById("btnDashboard").style.display = "block";
-
-        // Exibe a seção correspondente ao cargo
-        if (cargo == 'admin') {
-            document.querySelector('.user-section').style.display = 'block';
-            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-            document.getElementById('pUser').innerHTML = 'Sendo ADM, aqui você pode gerenciar tudo!'
-            
-        } else if (cargo == 'user') {
-            document.querySelector('.user-section').style.display = 'block';
-            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-            document.getElementById('pUser').innerHTML = 'Seu cargo não foi definido ainda... contate o ADM!'
-           
-            
-        }else if(cargo == 'professor') {
-            document.querySelector('.user-section').style.display = 'block';
-            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-            document.getElementById('pUser').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
-         
-          
-        }else if(cargo == 'coordenador') {
-            document.querySelector('.user-section').style.display = 'block';
-            document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-            document.getElementById('pUser').innerHTML = 'Como coordenador, aqui você pode se definir a grade das matérias!'
-         
-          
-        }else{
-            console.log('erro!')
-        }
-    }
+   
 
     function logout() {
         eraseCookie("userId");

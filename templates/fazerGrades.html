@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade de Professores e Matérias</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        .dragging {
+            opacity: 0.5;
+        }
+        .dropzone {
+            min-height: 40px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen p-4">
+    
+    <!-- Parte Superior: Tabela de Horários -->
+    <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md mb-4">
+        <h1 class="text-2xl font-bold text-center mb-4">Grade de Professores e Matérias</h1>
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 p-2 w-1/5">Segunda</th>
+                        <th class="border border-gray-300 p-2 w-1/5">Terça</th>
+                        <th class="border border-gray-300 p-2 w-1/5">Quarta</th>
+                        <th class="border border-gray-300 p-2 w-1/5">Quinta</th>
+                        <th class="border border-gray-300 p-2 w-1/5">Sexta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Slot para Matéria -->
+                    <tr>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-materia bg-gray-100"></td>
+                    </tr>
+                    <!-- Slots para Professores -->
+                    <tr>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Parte Inferior: Lista de Professores e Matérias -->
+    <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold text-center mb-4">Professores</h2>
+        <div class="flex flex-wrap gap-2 justify-center">
+            <div class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer draggable draggable-professor" draggable="true">Prof. João</div>
+            <div class="bg-green-500 text-white px-4 py-2 rounded cursor-pointer draggable draggable-professor" draggable="true">Prof. Maria</div>
+            <div class="bg-red-500 text-white px-4 py-2 rounded cursor-pointer draggable draggable-professor" draggable="true">Prof. Pedro</div>
+            <div class="bg-yellow-500 text-white px-4 py-2 rounded cursor-pointer draggable draggable-professor" draggable="true">Prof. Ana</div>
+            <div class="bg-purple-500 text-white px-4 py-2 rounded cursor-pointer draggable draggable-professor" draggable="true">Prof. Carlos</div>
+        </div>
+
+        <h2 class="text-xl font-bold text-center mt-6 mb-4">Matérias</h2>
+        <div class="flex flex-wrap gap-2 justify-center">
+            <div class="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer draggable draggable-materia" draggable="true">Matemática</div>
+            <div class="bg-gray-600 text-white px-4 py-2 rounded cursor-pointer draggable draggable-materia" draggable="true">História</div>
+            <div class="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer draggable draggable-materia" draggable="true">Física</div>
+            <div class="bg-gray-400 text-white px-4 py-2 rounded cursor-pointer draggable draggable-materia" draggable="true">Química</div>
+        </div>
+    </div>
+
+    <script>
+        function setupDragAndDropWithColor(draggableClass, dropzoneClass) {
+    document.querySelectorAll(draggableClass).forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text', item.innerText);
+            e.dataTransfer.setData('color', window.getComputedStyle(item).backgroundColor);
+            e.target.classList.add('dragging');
+        });
+
+        item.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+        });
+    });
+
+    document.querySelectorAll(dropzoneClass).forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            let itemNome = e.dataTransfer.getData('text');
+            let itemCor = e.dataTransfer.getData('color');
+            if (zone.innerText.trim() === "") {
+                zone.innerText = itemNome;
+                zone.style.backgroundColor = itemCor;
+                zone.classList.add('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+            }
+        });
+
+        zone.addEventListener('dblclick', () => {
+            zone.innerText = "";
+            zone.style.backgroundColor = "";
+            zone.classList.remove('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+        });
+    });
+}
+
+// Substitua a chamada anterior por esta nova função
+setupDragAndDropWithColor('.draggable-professor', '.dropzone-professor');
+setupDragAndDropWithColor('.draggable-materia', '.dropzone-materia')
+function enableBlockRemoval(dropzoneClass) {
+    document.querySelectorAll(dropzoneClass).forEach(zone => {
+        zone.addEventListener('click', (e) => {
+            if (e.target.innerText.trim() !== "") {
+                e.target.innerText = "";
+                e.target.style.backgroundColor = "";
+                e.target.classList.remove('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+            }
+        });
+    });
+}
+enableBlockRemoval('.dropzone-professor');
+enableBlockRemoval('.dropzone-materia');
+</script>
+
+</body>
+</html>

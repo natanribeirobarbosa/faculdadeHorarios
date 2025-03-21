@@ -35,12 +35,13 @@ function fetchAllUserData(userId) {
             return null;  // Retorna null em caso de erro
         });
 }
-
+let ids = {}
 //função que busca todos os cursos e disciplinas
 function fetchAllCurses() {
     return fetch('/allcourses').then(response => response.json())
     .then(data => {
         if (data.success) {
+            
             renderCursos(data.cursos)
             //return data.cursos; // Retorna os cursos para outra função
 

@@ -1,5 +1,7 @@
 let listaAtual = "";
-
+let cursos = []
+let Cursos = null
+let cursosDaMateria = null
 
 
 
@@ -107,6 +109,20 @@ function abrirPopup(funcao, lista, curso) {
             option80.value = "80";
             option80.textContent = "80h";
 
+                   // Criar elementos para o identificador dos cursos
+            let labelCursos = document.createElement("label");
+            labelCursos.textContent = "Identificadores dos cursos (separados por vírgula)";
+            let inputCursos = document.createElement("input");
+            inputCursos.type = "text";
+            inputCursos.id = "cursosInput";
+            inputCursos.placeholder = "Ex: 101, 102, 103";
+
+            // Função para converter os identificadores em array
+            inputCursos.addEventListener("input", function () {
+                cursos = inputCursos.value.split(",").map(valor => valor.trim()).filter(valor => valor !== ""); 
+                console.log("Array de identificadores:", cursos);
+            });
+
             selectCarga.appendChild(option60);
             selectCarga.appendChild(option80);
 
@@ -120,6 +136,14 @@ function abrirPopup(funcao, lista, curso) {
 
             inputsContainer.appendChild(labelCarga);
             inputsContainer.appendChild(selectCarga);
+
+       
+
+        // Adiciona os elementos ao pop-up
+        inputsContainer.appendChild(labelNome);
+        inputsContainer.appendChild(inputNome);
+        inputsContainer.appendChild(labelCursos);
+        inputsContainer.appendChild(inputCursos);
         } else {
             if (adicionarNome) adicionarNome.style.display = "block"; // Mostra adicionarNome
 
@@ -210,16 +234,16 @@ function adicionarMateria(curso) {
     let carga = document.getElementById("cargaHoraria").value
     let modalidade = document.getElementById('workType').value
 
+
     if (nome != null && nome != '') {
         fetch(`/addDiscipline`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nome, carga: carga, modalidade, curso: curso, userId})
+        body: JSON.stringify({ nome: nome, carga: carga, modalidade, cursos: cursos, userId})
         })
         .then(response => response.json())
         .then(data => {
         if (data.success) {
-           
             location.reload();
         } else {
         alert("Erro adicionar usuario!");
@@ -231,21 +255,58 @@ function adicionarMateria(curso) {
     }
 }
 
+function addLicenciatura(){
+    let cursoSelecionado = document.getElementById("curso").value;
+    if (cursoSelecionado != null && cursoSelecionado != '') {
+        fetch(`/adcionarlicenciatura`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ licenciatura: cursoSelecionado, userId})
+        })
+        .then(response => response.json())
+        .then(data => {
+        if (data.success) {
+            alert("Sucesso! Para visualizar recarregue.");
+        } else {
+        alert("ERRO");
+        }
+        })
+        .catch(error => console.error("Erro na adição:", error))
+    } else {
+        window.alert("Digite um nome válido.");
+    }
+}
+
+
+
 
 async function deletarMateria() {
+    console.log(Cursos)
     let disciplinaId = document.getElementById("nomeInput").value.trim(); // Pega o ID da matéria digitado
+
+    // Verifica se o campo está vazio
     if (!disciplinaId) {
-        alert("Por favor, insira o ID da disciplina para deletar.");
+        console.log("Por favor, digite um ID válido.");
         return;
     }
 
+    // Filtra os cursos que contêm a disciplina informada
+    let cursosEncontrados = Cursos.filter(curso =>
+        curso.disciplinas.some(disciplina => disciplina.id === disciplinaId)
+    );
+
+    // Cria um objeto JSON com os cursos encontrados
+    let resultadoJSON = cursosEncontrados.map(curso => ({ id: curso.id }))
+console.log(resultadoJSON)
+
+     
     try {
         let response = await fetch("/deleteDiscipline", {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ disciplinaId, userId, curso: cursoAtual })
+            body: JSON.stringify({ disciplinaId, userId, cursos: resultadoJSON })
         });
 
         let data = await response.json();
@@ -259,16 +320,42 @@ async function deletarMateria() {
         console.error("Erro ao deletar disciplina:", error);
         alert("Erro ao conectar com o servidor.");
     }
-}
+    
+    
+    }
+    /*
+    if (!disciplinaId) {
+        alert("Por favor, insira o ID da disciplina para deletar.");
+        return;
+    }
+
+   */
+
 
 //-----------------------------------dashboard---------------------
+
+function adicionarLicenciaturas(){
+    if(document.getElementById("adcionarLic").innerHTML == ''){
+        document.getElementById("adcionarLic").innerHTML += `
+        <select id="curso">
+            <option value="001">ADS</option>
+            <option value="002">Engenharia de Software</option>
+        </select>
+        <button class="positive option" onclick="addLicenciatura()">Enviar</button>`;
+    }else{
+        document.getElementById("adcionarLic").innerHTML = ''
+    }
+
+
+
+}
 
 function updateUserDataInDashboard(userData) {
     document.getElementById("userName").innerText = userData.nome;
     document.getElementById("userCargo").innerText = userData.cargo;
 
     if (userData.cargo === "professor") {
-        document.getElementById("userCargo").innerHTML += "<br>Licenciaturas:";
+        document.getElementById("userCargo").innerHTML += '<br>Licenciaturas: <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
 
         if (Array.isArray(userData.licenciaturas) && userData.licenciaturas.length > 0) {
             userData.licenciaturas.forEach(element => {
@@ -280,23 +367,29 @@ function updateUserDataInDashboard(userData) {
 
 // Função que renderiza os cursos no front-end
 function renderCursos(cursos) {
+    Cursos = cursos;
     
     const cursosContainer = document.getElementById("cursos");
 
     document.getElementById('loadingContainer2').style.display = 'none'
+    document.getElementById('cursosEDisciplinas').innerHTML += `<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria')"> Adicionar</span>
+            <span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria')"> Deletar</span>`
     
 
     cursos.forEach(curso => {
-        // Criando o título do curso (h2)
+      
+        
         const cursoTitle = document.createElement("h2");
-        cursoTitle.innerHTML = curso.nome + ` (${curso.disciplinas.length})` + 
-                               `<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria','${curso.id}')"> Adicionar</span>` + 
-                               `<span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria','${curso.id}')"> Deletar</span>`;
+        cursoTitle.innerHTML = curso.nome + ` <span class="numeroDoCurso"> (${curso.id})</span> (${curso.disciplinas.length})`
+
+
+        
         cursosContainer.appendChild(cursoTitle);
 
         // Criando a lista de disciplinas (ul)
         const disciplinaList = document.createElement("ul");
 
+        disciplinaList.classList = "disciplinas"
         curso.disciplinas.forEach(disciplina => {
             const disciplinaItem = document.createElement("li");
             disciplinaItem.innerHTML = `<strong>${disciplina.nome}</strong><span class="onlyAdmins">(${disciplina.id})</span><br>Carga horária: ${disciplina.carga}h <br>Modalidade: ${disciplina.modalidade}`;
@@ -316,9 +409,10 @@ function renderCursos(cursos) {
 
 //-------------------INDEX -------------------------------------------
 
+
 // Função para exibir os cursos na página index
 async function displayCourses(courses) {
-    
+    console.log(courses)
     // Garante que courses seja um array antes de continuar
     if (!Array.isArray(courses)) {
         console.warn("Erro: courses não é um array válido!", courses);
@@ -327,8 +421,22 @@ async function displayCourses(courses) {
 
     const courseList = document.getElementById("vagas");
     courseList.innerHTML = ''; // Limpa a lista antes de adicionar os novos cursos
+    
 
+    let ids = [];
+    let number = 0
     courses.forEach(course => {
+        if (ids.indexOf(course.nome) !== -1) {
+            number = number + 1
+            console.log(number)
+        } else {
+            ids.push(course.nome);
+            console.log("Adicionando curso:", course.nome);
+    
+        
+   
+    
+        
         // Cria o bloco de curso
         const courseBlock = document.createElement("div");
         courseBlock.classList.add("course-block");
@@ -352,10 +460,12 @@ async function displayCourses(courses) {
 
         // Adiciona o bloco de curso à lista
         courseList.appendChild(courseBlock);
+        }
     });
 
     // Atualiza o título com o número de cursos
-    document.getElementById('vagasTitle').innerText += ` (${courses.length})`;
+    document.getElementById('vagasTitle').innerText += ` (${ids.length})`;
+  
 }
 
 

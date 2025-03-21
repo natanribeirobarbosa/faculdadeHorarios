@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grades de horários</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h1 class="text-2xl font-bold text-center mb-4">Grades de horários</h1>
+        <label class="block text-gray-700 font-semibold mb-2" for="grade">Selecione a grade:</label>
+        <select id="grade" class="w-full p-2 border rounded mb-4">
+            <option value="ADS_Matutino">Análise e Desenvolvimento de Sistemas (ADS) - Matutino</option>
+            <option value="ADS_Noturno">Análise e Desenvolvimento de Sistemas (ADS) - Noturno</option>
+            <option value="EDS_Matutino">Engenharia de Software (EDS) - Matutino</option>
+            <option value="EDS_Noturno">Engenharia de Software (EDS) - Noturno</option>
+        </select>
+        <button onclick="baixarGrade('txt')" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2">Baixar TXT</button>
+        <button onclick="baixarGrade('pdf')" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-700 transition duration-300">Baixar PDF</button>
+    </div>
+    
+    <script>
+        function baixarGrade(formato) {
+            let gradeSelecionada = document.getElementById('grade').value;
+            let detalhes = {
+                "ADS_Matutino": "Análise e Desenvolvimento de Sistemas (Matutino) - Aulas das 08:00 às 12:00",
+                "ADS_Noturno": "Análise e Desenvolvimento de Sistemas (Noturno) - Aulas das 19:00 às 22:30",
+                "EDS_Matutino": "Engenharia de Software (Matutino) - Aulas das 08:00 às 12:00",
+                "EDS_Noturno": "Engenharia de Software (Noturno) - Aulas das 19:00 às 22:30"
+            };
+
+            let conteudo = `Grade de Horários Selecionada:\n\n${detalhes[gradeSelecionada]}`;
+
+            if (formato === 'txt') {
+                let blob = new Blob([conteudo], { type: 'text/plain' });
+                let link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Grade_${gradeSelecionada}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else if (formato === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                let doc = new jsPDF();
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("Grade de Horários", 10, 20);
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "normal");
+                doc.text(detalhes[gradeSelecionada], 10, 40);
+                doc.save(`Grade_${gradeSelecionada}.pdf`);
+            }
+        }
+    </script>
+</body>
+</html>

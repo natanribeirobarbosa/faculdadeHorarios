@@ -118,9 +118,17 @@ button.negative:hover {
   display: flex;
     flex-direction: column;
 }
+ 
+button.option{
+  width: 60px;
+  height: min-content;
+  color: white;
+  background-color: #063d78;
+  padding: 2px;
+  
+}
 
-
-h1 span, h2 span{
+h1 span, h2 span, .option{
   font-size: 13px;
   color: #007bff;
   cursor: pointer;

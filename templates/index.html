@@ -17,10 +17,6 @@
 
 <div class="container">
     <div id= 'login'>
-        <!--
-        <h1>Login</h1>
-        <input type="text" id="userId" placeholder="Digite seu código único">
-        <button onclick="login()">Entrar</button>-->
         <div id="loadingContainer">
             <div class="spinner"></div>
             <p id="loadingMessage">Carregando...</p>
@@ -58,7 +54,7 @@
 
         let ID = getCookie("userId");
         if (ID) {
-            //getCourses(ID); // Carrega os dados do usuário já logado
+        
             
             fetchUserData(ID).then(userData => {
                 if(userData.cargo == 'professor'){

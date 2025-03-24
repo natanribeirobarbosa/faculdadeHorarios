@@ -53,12 +53,14 @@
         document.getElementById("btnDashboard").style.display = "none";
 
         let ID = getCookie("userId");
+        
         if (ID) {
         
             
             fetchUserData(ID).then(userData => {
                 if(userData.cargo == 'professor'){
                     getCourses(ID)
+                    
                 }
                 showContentBasedOnCargo(userData.cargo, userData.nome)
             

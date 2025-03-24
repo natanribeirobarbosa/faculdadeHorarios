@@ -183,6 +183,38 @@ def get_user_data(user_id):
         return jsonify({'success': False, 'message': f"Erro ao carregar dados do usuário: {str(e)}"}), 500
 
 
+@app.route("/adicionar_candidato", methods=["POST"])
+def adicionar_candidato():
+    data = request.json
+    user_id = data.get("userId")
+    codigo_disciplina = data.get("codigoDisciplina")
+
+    if not all([user_id, codigo_disciplina]):
+        return jsonify({"success": False, "message": "Parâmetros inválidos!"}), 400
+
+    # Verifica se o usuário existe e se tem o cargo "professor"
+    user_ref = db.collection("users").document(user_id)
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        return jsonify({"success": False, "message": "Usuário não encontrado!"}), 404
+
+    if user_doc.to_dict().get("cargo") != "professor":
+        return jsonify({"success": False, "message": "Usuário não tem permissão para se candidatar!"}), 403
+
+    # Verifica se a disciplina existe
+    disciplina_ref = db.collection("disciplinas").document(codigo_disciplina)
+    if not disciplina_ref.get().exists:
+        return jsonify({"success": False, "message": "Disciplina não encontrada!"}), 404
+
+    # Adiciona o candidato ao array "candidatos"
+    disciplina_ref.update({
+        "candidatos": firestore.ArrayUnion([f"/users/{user_id}"])
+    })
+
+    return jsonify({"success": True, "message": "Candidato adicionado com sucesso!"}), 200
+
+
 # Função que retorna todos os usuários separados por cargos
 @app.route('/allusers/<user_id>', methods=['GET'])
 def get_all_users(user_id):
@@ -370,12 +402,15 @@ def allprofessorcourses(user_id):
                             nome_disciplina = disciplina_data.get('nome', 'Nome não disponível')
                             carga = disciplina_data.get('carga', 'Nome não disponível')
                             modalidade = disciplina_data.get('modalidade', 'modalidade não disponível')
+                            periodo = disciplina_data.get('periodo', 'modalidade não disponível')
 
                             # Adiciona a disciplina à lista com o campo 'nome'
                             disciplinas_separadas.append({
+                                'id': disciplina_doc.id,
                                 'nome': nome_disciplina,
                                 'carga': carga,
-                                'modalidade': modalidade
+                                'modalidade': modalidade,
+                                'periodo': periodo
                             })
 
                 

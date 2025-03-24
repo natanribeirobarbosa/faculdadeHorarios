@@ -355,7 +355,14 @@ function updateUserDataInDashboard(userData) {
     document.getElementById("userCargo").innerText = userData.cargo;
 
     if (userData.cargo === "professor") {
-        document.getElementById("userCargo").innerHTML += '<br>Licenciaturas: <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
+        document.getElementById("userCargo").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>'
+        
+        ;
+
+     console.log(userData.disciplinas)
+     userData.disciplinas.forEach(element => {
+        document.getElementById("userCargo").innerHTML += '<br>- '+element
+     });
 
         if (Array.isArray(userData.licenciaturas) && userData.licenciaturas.length > 0) {
             userData.licenciaturas.forEach(element => {
@@ -448,15 +455,19 @@ async function displayCourses(courses) {
             <h2>${course.nome}</h2>
             <p><strong>Carga Horária:</strong> ${course.carga}h</p>
             <p><strong>Modalidade:</strong> ${course.modalidade}</p>
+            <p><strong>Periodo:</strong> ${course.periodo}</p>
         `;
         courseBlock.appendChild(courseInfo);
 
         // Cria o botão "Me Candidatar"
         const button = document.createElement("button");
-        button.classList.add("positive");
+        button.classList.add(`positive`);
+        button.classList.add(`course${course.id}`);
         button.innerText = "Me Candidatar";
         button.onclick = () => alert(`Candidatura realizada para ${course.nome}`);
         courseBlock.appendChild(button);
+        button.addEventListener('click', () => meCandidatar(course.id));
+
 
         // Adiciona o bloco de curso à lista
         courseList.appendChild(courseBlock);
@@ -465,6 +476,7 @@ async function displayCourses(courses) {
 
     // Atualiza o título com o número de cursos
     document.getElementById('vagasTitle').innerText += ` (${ids.length})`;
+    aplicarTransparencia()
   
 }
 
@@ -557,5 +569,86 @@ function renderCargos(data) {
         document.querySelectorAll('.onlyAdmins').forEach(elemento => {
             elemento.style.display = 'inline';
         });
+    }
+}
+
+
+
+function aplicarTransparencia() {
+    // Obtém o cookie existente
+    let disciplinas = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('disciplinas='));
+
+    if (disciplinas) {
+        try {
+            disciplinas = JSON.parse(decodeURIComponent(disciplinas.split('=')[1]));
+        } catch (e) {
+            disciplinas = [];
+        }
+    } else {
+        disciplinas = [];
+    }
+
+    // Aplica a transparência nos elementos correspondentes
+    disciplinas.forEach(codigo => {
+        let elementos = document.querySelectorAll(`.course${codigo}`);
+        elementos.forEach(el => {
+            el.style.opacity = "0.5"; // 50% de transparência
+            el.innerText = "Candidato"
+        });
+    });
+}
+
+
+
+function meCandidatar(codigoDisciplina) {
+    let disciplinas = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('disciplinas='));
+
+    if (disciplinas) {
+        // Converte para array (se existir)
+        disciplinas = JSON.parse(decodeURIComponent(disciplinas.split('=')[1]));
+    } else {
+        disciplinas = [];
+    }
+
+    // Verifica se a disciplina já está no array
+    if (!disciplinas.includes(codigoDisciplina)) {
+        disciplinas.push(codigoDisciplina);
+        
+        // Atualiza o cookie com as disciplinas
+        document.cookie = `disciplinas=${encodeURIComponent(JSON.stringify(disciplinas))}; path=/; max-age=15552000`;
+    }
+
+    let ID = getCookie("userId");
+
+    if (ID) {   
+        fetch("/adicionar_candidato", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userId: ID,
+                codigoDisciplina: codigoDisciplina
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Resposta do servidor:", data);
+
+            // Aplica a transparência no botão
+            let botao = document.querySelector(".course" + codigoDisciplina);
+            if (botao) {
+                botao.style.opacity = "0.5";
+            }
+        })
+        .catch(error => {
+            console.error("Erro ao se candidatar:", error);
+        });
+    } else {
+        console.log("Erro! Usuário não encontrado.");
     }
 }

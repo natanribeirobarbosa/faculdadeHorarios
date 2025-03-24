@@ -118,15 +118,6 @@ button.negative:hover {
   display: flex;
     flex-direction: column;
 }
- 
-button.option{
-  width: 60px;
-  height: min-content;
-  color: white;
-  background-color: #063d78;
-  padding: 2px;
-  
-}
 
 h1 span, h2 span, .option{
   font-size: 13px;
@@ -134,6 +125,9 @@ h1 span, h2 span, .option{
   cursor: pointer;
 }
 
+span .negative{
+  color: red;
+}
 
 .hidenItems {
   white-space: nowrap;
@@ -211,6 +205,10 @@ h1 span, h2 span, .option{
 
 }
 
+#userData{
+    display: flex;
+    flex-direction: column;
+}
 
 
 /* Estilização para o curso-list */

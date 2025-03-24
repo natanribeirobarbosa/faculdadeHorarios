@@ -355,18 +355,17 @@ function updateUserDataInDashboard(userData) {
     document.getElementById("userCargo").innerText = userData.cargo;
 
     if (userData.cargo === "professor") {
-        document.getElementById("userCargo").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>'
-        
-        ;
+        document.getElementById("licenciaturas").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
 
-     console.log(userData.disciplinas)
      userData.disciplinas.forEach(element => {
-        document.getElementById("userCargo").innerHTML += '<br>- '+element
+        document.getElementById("licenciaturas").innerHTML += '<br>- '+element
      });
 
-        if (Array.isArray(userData.licenciaturas) && userData.licenciaturas.length > 0) {
-            userData.licenciaturas.forEach(element => {
-                document.getElementById("userCargo").innerHTML += `<br>- ${element}`;
+        if (Array.isArray(userData.candidaturas) && userData.candidaturas.length > 0) {
+            document.getElementById("candidaturas").innerHTML += '<br><strong>Candidaturas: </strong>'
+
+            userData.candidaturas.forEach(element => {
+                document.getElementById("candidaturas").innerHTML += `<br>- ${element}<span onclick="removerCandidatura()" class="option negative"> remover</span>`;
             });
         }
     }

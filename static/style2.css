@@ -7,7 +7,9 @@ body {
   background-color: #f4f4f4;
   flex-direction: column;
 }
-
+html{
+  
+}
 h1{
   font-size: 24px;
 
@@ -119,15 +121,25 @@ button.negative:hover {
     flex-direction: column;
 }
 
-h1 span, h2 span, .option{
+h1 span, h2 span, span.option{
   font-size: 13px;
-  color: #007bff;
+  background: none;
   cursor: pointer;
 }
 
-span .negative{
-  color: red;
+button.option{
+  width: min-content;
 }
+
+span.option.negative{
+  color: rgb(154, 36, 36);
+}
+
+span.option.positive{
+  color: #007bff;
+}
+
+
 
 .hidenItems {
   white-space: nowrap;
@@ -145,7 +157,8 @@ span .negative{
   transition: max-height 400ms ease-in-out, opacity 600ms ease-in-out;
 }
 
-.popup {
+
+.popup, .popup2 {
   position: fixed;
   top: -100%;
   left: 50%;
@@ -158,6 +171,42 @@ span .negative{
   text-align: center;
   transition: top 0.4s ease-in-out;
 }
+
+.notificacoes{
+
+  left: 10px;
+  bottom: 101%;
+  top: auto;
+  transform: translateY(60px);
+  border-radius: 0px 0px 8px 8px;
+  box-shadow: 0px 0px 12px #00000042;
+  width: 100%;
+  max-width: 123px;
+  transition: top 2s ease-in-out;
+}
+
+.notificacoes div{
+  max-height: 90vh; /* Evita que ultrapasse a altura da tela */
+  overflow: auto;
+}
+
+.notificacoes ul{
+  padding: 0;
+  margin: 0px;
+  margin-bottom: 10px;
+}
+
+.notificacoes li{
+  margin: 0px;
+  margin-bottom: 15px;
+}
+
+.notificacoes h3{
+  position: relative;
+  margin: 0px;
+  margin-top: 20px;
+}
+
 .popup input {
   width: 100%;
   padding: 8px;
@@ -175,12 +224,26 @@ span .negative{
   border-radius: 4px;
 }
 
+
+#not{
+  top: 6px;
+  width: 10px;
+  height: 9px;
+  background-color: red;
+  display: block;
+  position: absolute;
+  right: 1px;
+  border-radius: 9px;
+}
+
 .popup.active {
   top: 50%;
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%);
 }
+
+
 
 .infos{
   width: 100%;
@@ -278,4 +341,8 @@ span .negative{
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+#cargos{
+  display: none;
 }

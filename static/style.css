@@ -1,420 +1,104 @@
-
-/* Estilos modernos para a aplicação */
-:root {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
-  --danger-color: #e74c3c;
-  --warning-color: #f39c12;
-  --dark-color: #2c3e50;
-  --light-color: #ecf0f1;
-  --text-color: #333;
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
-  --radius: 8px;
+html{
+    min-height: 100vh;
 }
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    
 
-body {
-  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-  background-color: #f5f7fa;
-  color: var(--text-color);
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-  flex-direction: column;
+    background: linear-gradient(135deg, #109abd, #05052e);
 
 }
+button{
+    transition: 100ms;
 
-h1, h2, h3 {
-  font-weight: 600;
-  color: var(--dark-color);
+    transform: scale(1);  /* Aumenta o tamanho */        }
+button:hover{
+    transition: 100ms;
+    transform: scale(1.1);  /* Aumenta o tamanho */        }
+
+#course-list{
+    display: none;
 }
 
-h1 {
-  text-align: center;
-  margin: 25px 0;
-  font-size: 2.2rem;
-  color: var(--primary-color);
+#nameInput{
+    display: none;
 }
 
+.container{
+    background-color: white;
 
-.section {
-  background-color: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 25px;
-  margin-bottom: 30px;
-  transition: var(--transition);
-  border-top: 4px solid var(--primary-color);
 }
 
-.section:hover {
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-.section h2 {
-  margin-top: 0;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eee;
-  color: var(--primary-color);
-}
-
-input, select {
-  padding: 12px;
-  margin: 8px 0;
-  width: 100%;
-  border: 1px solid #ddd;
-  border-radius: var(--radius);
-  box-sizing: border-box;
-  font-size: 14px;
-  transition: var(--transition);
-}
-
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-button {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--transition);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 14px;
-}
-
-button:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-button.delete {
-  background-color: var(--danger-color);
-}
-
-button.delete:hover {
-  background-color: #c0392b;
-}
-
-button.edit {
-  background-color: var(--primary-color);
-}
-
-button.edit:hover {
-  background-color: #2980b9;
-}
-
-button.warning {
-  background-color: var(--warning-color);
-}
-
-button.warning:hover {
-  background-color: #d35400;
-}
-
-.result {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #e8f4fe;
-  border-left: 4px solid var(--primary-color);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  transition: var(--transition);
-}
-
-table {
-  width: 100%;
-  min-width: 600px;
-  border-collapse: collapse;
-  margin: 20px 0;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-table, th, td {
-  border: none;
-}
-
-th, td {
-  padding: 15px;
-  text-align: left;
-}
-
-th {
-  background-color: var(--primary-color);
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-
-table tr {
-  background-color: white;
-  transition: var(--transition);
-}
-
-table tr:nth-child(even) {
-  background-color: #f8f9fa;
-}
-
-table tr:hover {
-  background-color: #edf2f7;
-}
-
-td button {
-  margin: 2px;
-  padding: 8px 12px;
-  font-size: 12px;
-}
-
-/* Estilos para a tabela de horários */
-.horario-table {
-  width: 100%;
-  min-width: 500px;
-  border-collapse: collapse;
-  margin-bottom: 15px;
-  background-color: white;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-.horario-table th, .horario-table td {
-  border: 1px solid #eee;
-  padding: 10px;
-  text-align: center;
-}
-
-.horario-table th {
-  background-color: var(--primary-color);
-  color: white;
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-
-.horario-table td:first-child {
-  background-color: #f0f4f8;
-  font-weight: 500;
-  text-align: left;
-  color: var(--dark-color);
-}
-
-.horario-table input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: var(--primary-color);
-  transition: var(--transition);
-}
-
-.horario-table input[type="checkbox"]:checked {
-  transform: scale(1.1);
-}
-
-.horario-container {
-  overflow-x: auto;
-  padding: 10px 0;
-  width: 100%;
-}
-
-.header-row {
-  text-align: center;
-  background-color: #e0f0ff;
-  color: var(--dark-color);
-  font-weight: 600;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.action-buttons button {
-  flex: 1;
-  font-size: 12px;
-  padding: 8px;
-}
-
-/* Estilos responsivos */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 3px;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  
-  .section {
-    padding: 10px;
-    margin-bottom: 15px;
-    overflow: hidden;
-  }
-  
-  h1 {
-    font-size: 1.4rem;
-    margin: 10px 0;
-  }
-  
-  h2 {
-    font-size: 1.1rem;
-  }
-  
-  button {
-    width: 100%;
-    margin-bottom: 6px;
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-  
-  table {
-    display: block;
-    overflow-x: auto;
-    font-size: 14px;
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  #listaProfessores, #listaMaterias {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    max-width: 100%;
-    margin-right: 0;
-    padding-right: 0;
-  }
-  
-  table th, table td {
-    padding: 6px 4px;
-    min-width: 50px;
-    white-space: nowrap;
-  }
-  
-  td button {
-    white-space: nowrap;
-    font-size: 10px;
-    padding: 5px 6px;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .horario-table th, .horario-table td {
-    padding: 6px 3px;
-    font-size: 10px;
-  }
-  
-  .horario-table input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-  }
-  
-  input, select {
-    padding: 8px;
-    font-size: 13px;
-    margin: 6px 0;
-  }
-  
-  .result {
-    padding: 10px;
-    font-size: 13px;
-  }
-}
-
-/* Ajustes para telas menores que 768px (Tablets e Celulares) */
-@media (max-width: 768px) {
-  .component-img {
-    width: 100%; /* Imagem ocupa toda a largura disponível */
-  }
-
-  table {
-    font-size: 9pt; /* Reduz ainda mais o tamanho da fonte */
-    padding: 8px;
-    margin: 10px 0; /* Reduz margens */
-  }
-
-  th, td {
-    padding: 4px 2px; /* Reduz padding horizontal e vertical */
-    font-size: 9pt;
-  }
-
-  #listaMaterias table, #listaProfessores table {
-    min-width: auto; /* Remove largura mínima para se adaptar ao container */
-    width: 100%;
-  }
-
-  .length-container {
-    flex-direction: column; /* Empilha os elementos verticalmente */
-    gap: 20px; /* Reduz o espaço entre os elementos */
-  }
-
-  .length-container img {
-    width: 100%; /* Imagem ocupa toda a largura disponível */
-    max-width: 300px; /* Limita o tamanho da imagem */
-  }
-
-  .length-container table {
-    max-width: 100%; /* A tabela se ajusta à tela */
-  }
-}
-
-/* Ajustes extras para telas muito pequenas (menos de 480px) */
-@media (max-width: 480px) {
-  .description {
-    font-size: 10pt;
-    line-height: 24px;
-  }
-
-  .length-container img {
-    max-width: 250px; /* Reduz ainda mais a imagem para telas muito pequenas */
-  }
-}
-
-/* Melhoria para tablets */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .container {
-    padding: 0 15px;
-  }
-  
-  .section {
+.popup, .popup2 {
+    position: fixed;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    background: white;
     padding: 20px;
+    box-shadow: 0px 0px 27px #00000099;
+    border-radius: 8px;
+    text-align: center;
+    transition: top 0.4s ease-in-out;
   }
-}
+  
+  .notificacoes{
+  
+    left: 10px;
+    bottom: 101%;
+    top: auto;
+    transform: translateY(60px);
+    border-radius: 0px 0px 8px 8px;
+    width: 100%;
+    max-width: 123px;
+    transition: top 2s ease-in-out;
+  }
+  
+  .notificacoes div{
+    max-height: 90vh; /* Evita que ultrapasse a altura da tela */
+    overflow: auto;
+  }
 
-/* Otimizações para desktop */
-@media (min-width: 1025px) {
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
+  .popup input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 0.5px solid #212121;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  .popup button {
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 4px;
   }
   
-  .section {
-    padding: 25px;
+  
+  #not{
+    top: 6px;
+    width: 10px;
+    height: 9px;
+    background-color: red;
+    display: block;
+    position: absolute;
+    right: 1px;
+    border-radius: 9px;
   }
   
-  .action-buttons {
-    display: flex;
-    gap: 10px;
+  .popup.active {
+    top: 50%;
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%);
   }
   
-  button {
-    transition: all 0.2s ease;
+  #cargos{
+    display: none;
   }
-  
-  .horario-container {
-    max-width: 100%;
+  #Cursos{
+    display: none;
   }
-}

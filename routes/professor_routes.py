@@ -6,45 +6,169 @@ app = Flask(__name__)
 
 # Criando o Blueprint para professor
 professor_bp = Blueprint('professor', __name__)
+
+
 @professor_bp.route("/adicionar_candidato", methods=["POST"])
 def adicionar_candidato():
     try:
+        # Obtém os dados enviados
         data = request.json
         user_id = data.get("userId")
         codigo_disciplina = data.get("codigoDisciplina")
 
+        # Valida os parâmetros recebidos
         if not all([user_id, codigo_disciplina]):
             return jsonify({"success": False, "message": "Parâmetros inválidos!"}), 400
 
-        # Verifica se o usuário existe e se tem o cargo "professor"
+        # Verifica se o usuário existe e tem o cargo "professor"
         user_ref = db.collection("users").document(user_id)
         user_doc = user_ref.get()
 
         if not user_doc.exists:
             return jsonify({"success": False, "message": "Usuário não encontrado!"}), 404
 
-        if user_doc.to_dict().get("cargo") != "professor":
+        user_data = user_doc.to_dict()
+        if user_data.get("cargo") != "professor":
             return jsonify({"success": False, "message": "Usuário não tem permissão para se candidatar!"}), 403
 
         # Verifica se a disciplina existe
         disciplina_ref = db.collection("disciplinas").document(codigo_disciplina)
-        if not disciplina_ref.get().exists:
-            return jsonify({"success": False, "message": "Disciplina não encontrada!"}), 404
+        disciplina_doc = disciplina_ref.get()
 
-        # Adiciona o candidato ao array "candidatos" da disciplina
-        disciplina_ref.update({
-            "candidatos": firestore.ArrayUnion([f"/users/{user_id}"])
+        if not disciplina_doc.exists:
+            return jsonify({"success": False, "message": "Disciplina não encontrada!"}), 404
+        
+        # Verifica o array de candidaturas do usuário
+        candidaturasNoUsuario = user_data.get("candidaturas", [])
+        if len(candidaturasNoUsuario) == 1:
+            for candidatura in candidaturasNoUsuario:
+                candidatura.update({
+                "candidatos": firestore.ArrayUnion([user_ref])  # Adiciona a referência do usuário como candidato
+            })
+                disciplina_ref.update({
+                "candidatos": firestore.ArrayUnion([user_ref])  # Adiciona a referência do usuário
+                    })
+                user_ref.update({
+                "candidaturas": firestore.ArrayUnion([disciplina_ref]),
+                "mensagens": firestore.ArrayUnion(["mensagem"])
         })
+                return jsonify({"success": True, "message": "Candidato adicionado com sucesso!"}), 200
+            
+
+        elif len(candidaturasNoUsuario) >= 2:
+                disciplina_ref.update({
+                "candidatos": firestore.ArrayUnion([user_ref])  # Adiciona a referência do usuário
+                    })
+                user_ref.update({
+                "candidaturas": firestore.ArrayUnion([disciplina_ref]),
+                "mensagens": firestore.ArrayUnion(["mensagem"])
+        })
+                return jsonify({"success": True, "message": "Candidato adicionado com sucesso!"}), 200
+        
+        elif len(candidaturasNoUsuario) == 0:
+                user_ref.update({
+                "candidaturas": firestore.ArrayUnion([disciplina_ref]),
+                "mensagens": firestore.ArrayUnion(["mensagem"])
+                })
+                return jsonify({"success": True, "message": "Candidato adicionado com sucesso!"}), 200  
+                        
+
+
+            
+
+
+
 
         # Adiciona a referência da disciplina ao array "candidaturas" do usuário
-        user_ref.update({
-            "candidaturas": firestore.ArrayUnion([disciplina_ref])
-        })
 
-        return jsonify({"success": True, "message": "Candidato adicionado com sucesso!"}), 200
+         
+    
+    except Exception as e:
+        # Mensagem de erro mais detalhada para depuração
+        return jsonify({"success": False, "message": f"Ocorreu um erro: {str(e)}"}), 500
+
+
+
+@professor_bp.route("/remover_candidato", methods=["POST"])
+def remover_candidato():
+    try:
+        print("📌 Iniciando remoção de candidatura")
+
+        # Captura os dados da requisição
+        data = request.json
+        print("📌 Dados recebidos:", data)
+
+        user_id = str(data.get("userId"))
+        codigo_disciplina = str(data.get("codigoDisciplina"))  # Converte logo ao capturar o dado
+
+        if not all([user_id, codigo_disciplina]):
+            print("❌ Parâmetros inválidos!")
+            return jsonify({"success": False, "message": "Parâmetros inválidos!"}), 400
+
+        print(f"📌 User ID: {user_id}, Código Disciplina: {codigo_disciplina}")
+
+        # Referências no Firestore
+        user_ref = db.collection("users").document(user_id)
+        disciplina_ref = db.collection("disciplinas").document(codigo_disciplina)
+
+        # Verifica se o usuário existe
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            print("❌ Usuário não encontrado!")
+            return jsonify({"success": False, "message": "Usuário não encontrado!"}), 404
+
+        user_data = user_doc.to_dict()
+        print("📌 Dados do usuário:", user_data)
+
+        if user_data.get("cargo") != "professor":
+            print("❌ Usuário não tem permissão para remover candidatura!")
+            return jsonify({"success": False, "message": "Usuário não tem permissão para remover candidatura!"}), 403
+
+        # Verifica se a disciplina existe
+        disciplina_doc = disciplina_ref.get()
+        if not disciplina_doc.exists:
+            print("❌ Disciplina não encontrada!")
+            return jsonify({"success": False, "message": "Disciplina não encontrada!"}), 404
+
+        
+
+        # Formata os valores corretamente
+        candidato_path = f"users/{user_id}"
+        disciplina_path = f"disciplinas/{codigo_disciplina}"
+
+        
+        disciplina_doc = disciplina_ref.get().to_dict()
+        user_data = user_ref.get().to_dict()
+
+        candidato_ref = db.document(candidato_path)  # Convertendo string para DocumentReference
+        disciplina_ref_to_remove = db.document(disciplina_path)  # Convertendo string para DocumentReference
+
+        print("📌 Disciplina doc:", disciplina_ref_to_remove)
+        print("📌 User data:", candidato_ref)
+
+        if "candidatos" in disciplina_doc:
+            disciplina_ref.update({
+                "candidatos": firestore.ArrayRemove([candidato_ref])
+            })
+            print("✅ Candidato removido da disciplina!")
+        else:
+            print("❌ Campo 'candidatos' não encontrado na disciplina!")
+
+        if "candidaturas" in user_data:
+            user_ref.update({
+                "candidaturas": firestore.ArrayRemove([disciplina_ref_to_remove])
+            })
+            print("✅ Disciplina removida do usuário!")
+        else:
+            print("❌ Campo 'candidaturas' não encontrado no usuário!")
+
+        
+        return jsonify({"success": True, "message": "Candidatura removida com sucesso!"}), 200
 
     except Exception as e:
+        print("❌ Erro inesperado:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
+
 
 
 
@@ -149,7 +273,77 @@ def adcionarlicenciatura():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
 
+@professor_bp.route('/add-disponibilidade', methods=['POST'])
+def add_disponibilidade():
+    try:
+        # Obtém os dados da requisição
+        data = request.get_json()
+        user_id = data.get('userId')
+        disponibilidade = data.get('disponibilidade')
+
+        # Valida se os dados estão completos
+        if not all([user_id, disponibilidade]):
+            return jsonify({"error": "userId e disponibilidade são obrigatórios"}), 400
+
+        # Verifica se o usuário é um professor
+        user_ref = db.collection("users").document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists or user_doc.to_dict().get("cargo") != "professor":
+            return jsonify({"error": "Usuário sem permissão ou não é professor"}), 403
+
+        # Obtém a lista atual de disponibilidades do usuário
+        user_data = user_doc.to_dict()
+        disponibilidades_atual = user_data.get("periodos", [])
+
+        # Verifica se a disponibilidade já existe na lista
+        if disponibilidade not in disponibilidades_atual:
+            disponibilidades_atual.append(disponibilidade)
+            user_ref.update({"periodos": disponibilidades_atual})
+
+        return jsonify({"success": True, "message": f"Disponibilidade {disponibilidade} adicionada com sucesso! Para ver atualize a página."})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+@professor_bp.route('/remove-disponibilidade', methods=['POST'])
+def remove_disponibilidade():
+    try:
+        # Obtém os dados da requisição
+        data = request.get_json()
+        user_id = data.get('userId')
+        disponibilidade = data.get('disponibilidade')
+
+        # Valida se os dados estão completos
+        if not all([user_id, disponibilidade]):
+            return jsonify({"error": "userId e disponibilidade são obrigatórios"}), 400
+
+        # Verifica se o usuário é um professor
+        user_ref = db.collection("users").document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists or user_doc.to_dict().get("cargo") != "professor":
+            return jsonify({"error": "Usuário sem permissão ou não é professor"}), 403
+
+        # Obtém a lista atual de disponibilidades do usuário
+        user_data = user_doc.to_dict()
+        disponibilidades_atual = user_data.get("periodos", [])
+
+        # Verifica se a disponibilidade está na lista
+        if disponibilidade in disponibilidades_atual:
+            print('removido.')
+            disponibilidades_atual.remove(disponibilidade)
+            user_ref.update({"periodos": disponibilidades_atual})
+            return jsonify({"success": True, "message": f"Disponibilidade {disponibilidade} removida com sucesso! Para ver atualize a página."})
+        else:
+            return jsonify({"error": f"A disponibilidade {disponibilidade} não foi encontrada."}), 404
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 # Registrando o Blueprint
 app.register_blueprint(professor_bp, url_prefix='/professor')

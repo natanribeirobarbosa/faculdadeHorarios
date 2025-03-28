@@ -67,10 +67,10 @@ def get_user_data(user_id):
     try:
         user_ref = db.collection('users').document(user_id)
         user_doc = user_ref.get()
-        
+
         if user_doc.exists:
             user_data = user_doc.to_dict()
-            
+
             response = {
                 'success': True,
                 'user': {
@@ -79,9 +79,11 @@ def get_user_data(user_id):
                 }
             }
 
+            candidaturas_refs = user_data.get('candidaturas', [])  # Garantindo que candidaturas_refs sempre tenha valor
+
             if user_data.get('cargo', '').lower() == 'professor':
                 licenciaturas_refs = user_data.get('licenciaturas', [])
-                candidaturas_refs = user_data.get('candidaturas', [])  # Adiciona a busca pelas candidaturas
+                periodos_ref = user_data.get('periodos', [])
                 
                 if isinstance(licenciaturas_refs, list):
                     licenciaturas = set()
@@ -96,22 +98,41 @@ def get_user_data(user_id):
                                     licenciaturas.add(nome_disciplina)
 
                     response['user']['disciplinas'] = list(licenciaturas)
+
+                    
+                if isinstance(periodos_ref, list):
+                    periodos = set()
+                    print(periodos_ref)
+                    
+                    # Verificando se periodos_ref não está vazio
+                    if len(periodos_ref) > 0:  
+                        periodos.update(periodos_ref)
+
+                    response['user']['periodos'] = list(periodos)  # Converte de volta para lista
+
+
+
+
                 
-                # Agora, também inclui as candidaturas
-                if isinstance(candidaturas_refs, list):
-                    candidaturas = set()
+            # Agora, também inclui as candidaturas (sempre verifica se candidaturas_refs foi definida)
+            if isinstance(candidaturas_refs, list):
+                candidaturas = []  # Alterado para lista
 
-                    for candidatura_ref in candidaturas_refs:
-                        if isinstance(candidatura_ref, firestore.DocumentReference):
-                            disciplina_doc = candidatura_ref.get()  # Aqui resolvemos a referência da candidatura
-                            if disciplina_doc and disciplina_doc.exists:
-                                disciplina_data = disciplina_doc.to_dict() or {}
-                                nome_disciplina = disciplina_data.get('nome')
-                                if nome_disciplina:
-                                    candidaturas.add(nome_disciplina)
+                for candidatura_ref in candidaturas_refs:
+                    if isinstance(candidatura_ref, firestore.DocumentReference):
+                        disciplina_doc = candidatura_ref.get()  # Obtém o documento da candidatura
+                        if disciplina_doc and disciplina_doc.exists:
+                            disciplina_data = disciplina_doc.to_dict() or {}
+                            nome_disciplina = disciplina_data.get('nome')
 
-                    response['user']['candidaturas'] = list(candidaturas)
-            
+                            if nome_disciplina:
+                                candidaturas.append({
+                                    "id": disciplina_doc.id,  # Agora armazenando o ID corretamente
+                                    "nome": nome_disciplina
+                                })
+
+                response['user']['candidaturas'] = candidaturas  # Já está em formato de lista
+
             return jsonify(response)
         
         else:
@@ -119,6 +140,7 @@ def get_user_data(user_id):
 
     except Exception as e:
         return jsonify({'success': False, 'message': f"Erro ao carregar dados do usuário: {str(e)}"}), 500
+
 
 
 

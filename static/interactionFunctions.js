@@ -16,6 +16,19 @@ function fecharPopup() {
 }
 
 
+function abrirNotificacoes() {
+    console.log('dsadsdsad')
+    let popup = document.getElementById('popup2'); 
+    popup.style.transform = "translateY(100%)"; // Esconde a notificação
+    
+}
+
+function fecharNotificacao(){
+    let popup = document.getElementById('popup2'); 
+    popup.style.transform = "translateY(60px)"; // Esconde a notificação
+}
+
+
 
 
 
@@ -167,6 +180,9 @@ function abrirPopup(funcao, lista, curso) {
 
     popup.classList.add("active");
 }
+
+
+
 
 
 
@@ -337,6 +353,7 @@ console.log(resultadoJSON)
 function adicionarLicenciaturas(){
     if(document.getElementById("adcionarLic").innerHTML == ''){
         document.getElementById("adcionarLic").innerHTML += `
+        <span>Curso</span>
         <select id="curso">
             <option value="001">ADS</option>
             <option value="002">Engenharia de Software</option>
@@ -344,11 +361,75 @@ function adicionarLicenciaturas(){
         <button class="positive option" onclick="addLicenciatura()">Enviar</button>`;
     }else{
         document.getElementById("adcionarLic").innerHTML = ''
-    }
+    }   
 
 
 
 }
+
+function adicionarPeriodo(){
+    if(document.getElementById("adcionarLic").innerHTML == ''){
+        document.getElementById("adcionarLic").innerHTML += `
+        <span>Periodo</span>
+        <select id="disponibilidade">
+            
+            <option value="matutino">Matutino</option>
+            <option value="noturno">Noturno</option>
+        </select>
+        <button class="positive option" onclick="addDisponibilidade()">Enviar</button>`;
+    }else{
+        document.getElementById("adcionarLic").innerHTML = ''
+    }
+}
+
+function removerDisponibilidade(periodo) {
+
+    // Envia a requisição para a rota de remoção
+    fetch('/remove-disponibilidade', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId,
+        disponibilidade: periodo,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Exibe a resposta, pode ser uma mensagem de sucesso ou erro
+      alert(data.message || data.error);
+    })
+    .catch((error) => {
+      // Exibe erro se algo falhar
+      console.error('Erro ao remover a disponibilidade:', error);
+      alert('Erro ao tentar remover a disponibilidade');
+    });
+  }
+
+
+function addDisponibilidade() {
+    var disponibilidade = document.getElementById("disponibilidade").value;
+    
+
+    fetch('/add-disponibilidade', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId,
+        disponibilidade: disponibilidade,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      window.alert(data.message);
+    })
+    .catch((error) => {
+      console.error('Erro:', error);
+    });
+  }
 
 function updateUserDataInDashboard(userData) {
     document.getElementById("userName").innerText = userData.nome;
@@ -358,18 +439,48 @@ function updateUserDataInDashboard(userData) {
         document.getElementById("licenciaturas").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
 
      userData.disciplinas.forEach(element => {
-        document.getElementById("licenciaturas").innerHTML += '<br>- '+element
+        document.getElementById("licenciaturas").innerHTML += '<p>- '+element+'<span onclick="removerLicenciatura(${element})" class="option negative"> remover</span></p>'
      });
-
+        document.getElementById("candidaturas").innerHTML += '<br><strong>Pretendo ministrar: </strong>'
         if (Array.isArray(userData.candidaturas) && userData.candidaturas.length > 0) {
-            document.getElementById("candidaturas").innerHTML += '<br><strong>Candidaturas: </strong>'
-
+            
             userData.candidaturas.forEach(element => {
-                document.getElementById("candidaturas").innerHTML += `<br>- ${element}<span onclick="removerCandidatura()" class="option negative"> remover</span>`;
+                document.getElementById("candidaturas").innerHTML += `<p>- ${element.nome}<span onclick="removerCandidatura(${element.id})" class="option negative"> remover</span></p>`;
+            });
+        }
+
+
+        document.getElementById("periodos").innerHTML += '<br><strong>Estou disponível: </strong><span onclick="adicionarPeriodo()" class="option">Adcionar</span>'
+        if (Array.isArray(userData.periodos) && userData.periodos.length > 0) {
+            
+            userData.periodos.forEach(element => {
+                document.getElementById("periodos").innerHTML += `<p>- ${element}<span onclick="removerDisponibilidade('${element}')" class="option negative"> remover</span></p>`;
             });
         }
     }
 }
+
+async function removerCandidatura(id) {
+    try {
+        const response = await fetch("/remover_candidato", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ userId: userId, codigoDisciplina: id })
+        })
+        
+        if (!response.ok) {
+            throw new Error('Erro ao remover candidatura');
+        }
+
+        
+        location.reload();
+    } catch (error) {
+        console.error('Erro:', error.message);
+    }
+}
+
 
 // Função que renderiza os cursos no front-end
 function renderCursos(cursos) {
@@ -378,8 +489,8 @@ function renderCursos(cursos) {
     const cursosContainer = document.getElementById("cursos");
 
     document.getElementById('loadingContainer2').style.display = 'none'
-    document.getElementById('cursosEDisciplinas').innerHTML += `<span class="onlyAdmins" onclick="abrirPopup('adicionar','matéria')"> Adicionar</span>
-            <span class="onlyAdmins negative" onclick="abrirPopup('deletar','matéria')"> Deletar</span>`
+    document.getElementById('cursosEDisciplinas').innerHTML += `<span class="onlyAdmins option positive" onclick="abrirPopup('adicionar','matéria')"> Adicionar</span>
+            <span class="onlyAdmins negative option" onclick="abrirPopup('deletar','matéria')"> Deletar</span>`
     
 
     cursos.forEach(curso => {
@@ -398,7 +509,7 @@ function renderCursos(cursos) {
         disciplinaList.classList = "disciplinas"
         curso.disciplinas.forEach(disciplina => {
             const disciplinaItem = document.createElement("li");
-            disciplinaItem.innerHTML = `<strong>${disciplina.nome}</strong><span class="onlyAdmins">(${disciplina.id})</span><br>Carga horária: ${disciplina.carga}h <br>Modalidade: ${disciplina.modalidade}`;
+            disciplinaItem.innerHTML = `<strong>${disciplina.nome}</strong><span class="onlyAdmins"> (${disciplina.id})</span><br>Carga horária: ${disciplina.carga}h <br>Modalidade: ${disciplina.modalidade}`;
             disciplinaList.appendChild(disciplinaItem);
         });
 
@@ -475,7 +586,7 @@ async function displayCourses(courses) {
 
     // Atualiza o título com o número de cursos
     document.getElementById('vagasTitle').innerText += ` (${ids.length})`;
-    aplicarTransparencia()
+   
   
 }
 
@@ -549,7 +660,7 @@ function renderCargos(data) {
     function adicionarUsuarios(lista, usuarios, exibirId = false) {
         usuarios.forEach(usuario => {
             const listItem = document.createElement('li');
-            listItem.innerHTML = usuario.nome + (exibirId ? `<span class="onlyAdmins">(${usuario.id})</span>` : '');
+            listItem.innerHTML = usuario.nome + (exibirId ? `<span class="onlyAdmins"> (${usuario.id})</span>` : '');
             lista.appendChild(listItem);
         });
     }

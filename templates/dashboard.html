@@ -5,53 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
     <script src="{{ url_for('static', filename='dataFunctions.js') }}"></script>
     <script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
 
     
     <style>
-        #admins {
-  /*list-style-type: none; /* Remove os bullets */
-  padding: 0; /* Remove o padding */
-  display: flex; /* Alinha os <li> horizontalmente */
-  flex-wrap: wrap; /* Permite quebrar linha se necessário */
-}
-
-ul li {
-  margin-right: 10px; /* Espaço entre os itens */
-
-  font-size: 13px;
-  list-style-type: none;
-
-}
-
-ul li:after {
-  content: ","; /* Adiciona uma vírgula após cada item */
-}
-
-ul li:last-child:after {
-  content: ""; /* Remove a vírgula do último item */
-}
+   
 .onlyAdmins{
     display: none;
 }
 
-h2>.onlyAdmins{
-    font-size: 13px;
-    font-weight: normal;
-    color: #007bff;
-    cursor: pointer;
-}
-
-h2>.negative{
-    color: red;
-}
 
        
     </style>
 </head>
 <body>
+
+    
+
 
 <div class="container">
     <h1>Dashboard</h1>
@@ -67,6 +40,7 @@ h2>.negative{
         <span id="userCargo">Carregando...</span>
         <span id="licenciaturas"></span>
         <span id="candidaturas"></span>
+        <span id="periodos"></span>
 
 
         <div id="adcionarLic"></div>
@@ -80,7 +54,7 @@ h2>.negative{
 </div>
 
 
-    <div class="hidenItems infos" id="cargos">
+    <div class="hidenItems infos container" id="cargos">
         <h1>Cargos <span onclick="toggleSection('cargos')">mostrar</span></h1>
         <div id="loadingContainer1">
             <div class="spinner"></div>
@@ -89,19 +63,19 @@ h2>.negative{
         <h2 id="administradoresTitle">Administradores</h2>
         <ul id="admins"></ul>
 
-        <h2 id = "professoresTitle">Professores<span class="onlyAdmins" onclick="abrirPopup('adicionar','professor')"> Adicionar</span>
+        <h2 id = "professoresTitle">Professores<span class="onlyAdmins negative option" onclick="abrirPopup('adicionar','professor')"> Adicionar</span>
             <span class="onlyAdmins negative" onclick="abrirPopup('deletar','professor')"> Deletar</span>
         
         </h2>
         <ul id="professores"></ul>
 
-        <h2 id= "coordenadoresTitle">Coordenadores<span class="onlyAdmins" onclick="abrirPopup('adicionar','coordenador')"> Adicionar</span>
+        <h2 id= "coordenadoresTitle">Coordenadores<span class="onlyAdmins positive option" onclick="abrirPopup('adicionar','coordenador')"> Adicionar</span>
             <span class="onlyAdmins negative" onclick="abrirPopup('deletar','coordenador')"> Deletar</span>
         </h2>
         <ul id="coordenadores"></ul>
 
-        <h2 id= "usuariosTitle">Usuários: (somente leitura)<span class="onlyAdmins" onclick="abrirPopup('adicionar','user')"> Adicionar</span>
-            <span class="onlyAdmins negative" onclick="abrirPopup('deletar','user')"> Deletar</span>
+        <h2 id= "usuariosTitle">Usuários: (somente leitura)<span class="onlyAdmins positive" onclick="abrirPopup('adicionar','user')"> Adicionar</span>
+            <span class="onlyAdmins negative option" onclick="abrirPopup('deletar','user')"> Deletar</span>
         </h2>
         <ul id="usuarios"></ul>
     </div>
@@ -118,7 +92,23 @@ h2>.negative{
             <button id="deletarMateria" class="negative" onclick="deletarMateria(cursoAtual)">Deletar</button>
     </div>
 
-    <div class="hidenItems infos divCursos" id="Cursos">
+    <div onclick="abrirNotificacoes()" id="popup2" class="popup2 notificacoes">
+        <div>
+        <ul>
+            <li>Sem notificações</li>
+            <li>Sem notificações</li>
+            <li>Sem notificações</li>
+            <li>Sem notificações</li>
+   
+            <li>Sem notificações</li>
+            <li>Sem notificações</li>
+        </ul>
+    </div>
+        <h3 id="nomePopup">Notificações<span id="not" class="option negative"></span></h3>
+        
+    </div>
+
+    <div class="hidenItems infos divCursos container" id="Cursos">
         <h1 id="cursosEDisciplinas">Cursos e disciplinas <span onclick="toggleSection('Cursos')">mostrar</span><br>
             
 
@@ -151,10 +141,23 @@ h2>.negative{
         //função basica de usuario
         fetchUserData(userId).then(userData => {
             cargo = userData.cargo
-            if(cargo == 'admin'){
+            if(cargo == 'admin' || cargo == 'coordenador'){
+              
+                document.getElementById('cargos').style.display = "block"
+            
                 document.getElementById("Cursos").style.display = 'block'
-                fetchAllCurses()
+                fetchAllCurses();
+                //buscar todos usuarios
+                fetchAllUserData(userId).then(usersData => {
+                renderCargos(usersData);
+                console.log(usersData)
+                })
+                .catch(error => {
+                alert("Erro ao carregar dados dos usuários.");
+                });
+                
             }
+            
             
             updateUserDataInDashboard(userData);
            
@@ -162,19 +165,6 @@ h2>.negative{
         .catch(error => {
             alert("Erro ao carregar dados do usuário.");
         });
-
-
-        //buscar todos usuarios
-        fetchAllUserData(userId).then(usersData => {
-            renderCargos(usersData);
-            console.log(usersData)
-        })
-        .catch(error => {
-            alert("Erro ao carregar dados dos usuários.");
-        });
-
-        
-
 
 
 
@@ -245,6 +235,15 @@ h2>.negative{
             let popup = document.getElementById("popup");
             if (!popup.contains(event.target) && !event.target.classList.contains("onlyAdmins")) {
                 fecharPopup();
+                
+            }
+        });
+
+        document.addEventListener("click", function(event) {
+            let popup = document.getElementById("popup2");
+            if (!popup.contains(event.target)) {
+                fecharNotificacao()
+                
             }
         });
 

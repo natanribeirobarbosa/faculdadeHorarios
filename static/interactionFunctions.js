@@ -16,17 +16,6 @@ function fecharPopup() {
 }
 
 
-function abrirNotificacoes() {
-    console.log('dsadsdsad')
-    let popup = document.getElementById('popup2'); 
-    popup.style.transform = "translateY(100%)"; // Esconde a notificação
-    
-}
-
-function fecharNotificacao(){
-    let popup = document.getElementById('popup2'); 
-    popup.style.transform = "translateY(60px)"; // Esconde a notificação
-}
 
 
 
@@ -38,11 +27,6 @@ function abrirPopup(funcao, lista, curso) {
     let popup = document.getElementById("popup");
     let nomePopup = document.getElementById("nomePopup");
     let inputsContainer = document.getElementById("inputs");
-
-    
-
- 
-    
 
     if (!popup || !nomePopup || !inputsContainer) {
         console.error("Elementos não encontrados.");
@@ -362,10 +346,32 @@ function adicionarLicenciaturas(){
     }else{
         document.getElementById("adcionarLic").innerHTML = ''
     }   
-
-
-
 }
+
+async function removerLicenciatura(licenciaturaId) {
+    try {
+        const response = await fetch('/removerlicenciatura', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, licenciatura: licenciaturaId })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+        } else {
+            alert(`Erro: ${data.message || "Falha ao remover licenciatura."}`);
+        }
+    } catch (error) {
+        console.error("Erro ao remover licenciatura:", error);
+        alert("Erro ao conectar com o servidor.");
+    }
+}
+
+
 
 function adicionarPeriodo(){
     if(document.getElementById("adcionarLic").innerHTML == ''){
@@ -381,6 +387,25 @@ function adicionarPeriodo(){
         document.getElementById("adcionarLic").innerHTML = ''
     }
 }
+
+function adicionarModalidade(){
+    if(document.getElementById("adcionarLic").innerHTML == ''){
+        document.getElementById("adcionarLic").innerHTML += `
+        <span>Modalidade</span>
+        <select id="Modalidade">
+            
+            <option value="presencial">Presencial</option>
+            <option value="remoto">Remoto</option>
+        </select>
+        <button class="positive option" onclick="addModalidade()">Enviar</button>`;
+    }else{
+        document.getElementById("adcionarLic").innerHTML = ''
+    }
+}
+
+
+
+
 
 function removerDisponibilidade(periodo) {
 
@@ -431,32 +456,86 @@ function addDisponibilidade() {
     });
   }
 
+
+  function addModalidade() {
+    var modalidade = document.getElementById("Modalidade").value;
+    fetch('/add-modalidade', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId,
+        modalidade: modalidade,
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      window.alert(data.message);
+    })
+    .catch((error) => {
+      console.error('Erro:', error);
+    });
+  }
+
+  async function removerModalidade(modalidade) {
+    try {
+        const response = await fetch('/remove-modalidade', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, modalidade })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+        } else {
+            alert(`Erro: ${data.message || "Falha ao remover modalidade."}`);
+        }
+    } catch (error) {
+        console.error("Erro ao remover modalidade:", error);
+        alert("Erro na conexão com o servidor.");
+    }
+}
+
+
+
 function updateUserDataInDashboard(userData) {
     document.getElementById("userName").innerText = userData.nome;
     document.getElementById("userCargo").innerText = userData.cargo;
 
     if (userData.cargo === "professor") {
-        document.getElementById("licenciaturas").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
+            document.getElementById("licenciaturas").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
 
-     userData.disciplinas.forEach(element => {
-        document.getElementById("licenciaturas").innerHTML += '<p>- '+element+'<span onclick="removerLicenciatura(${element})" class="option negative"> remover</span></p>'
-     });
-        document.getElementById("candidaturas").innerHTML += '<br><strong>Pretendo ministrar: </strong>'
-        if (Array.isArray(userData.candidaturas) && userData.candidaturas.length > 0) {
+            userData.licenciaturas.forEach(element => {
+            document.getElementById("licenciaturas").innerHTML += `<p>- ${element[1]}<span onclick="removerLicenciatura('${element[0]}')" class="option negative"> remover</span></p>`
+            });
             
+            document.getElementById("candidaturas").innerHTML += '<br><strong>Pretendo ministrar: </strong>'
+            if (Array.isArray(userData.candidaturas) && userData.candidaturas.length > 0) {
             userData.candidaturas.forEach(element => {
-                document.getElementById("candidaturas").innerHTML += `<p>- ${element.nome}<span onclick="removerCandidatura(${element.id})" class="option negative"> remover</span></p>`;
+            document.getElementById("candidaturas").innerHTML += `<p>- ${element.nome}<span onclick="removerCandidatura(${element.id})" class="option negative"> remover</span></p>`;
             });
-        }
+            }
 
+            document.getElementById("periodos").innerHTML += '<br><strong>Estou disponível: </strong><span onclick="adicionarPeriodo()" class="option">Adcionar</span>'
+            if (Array.isArray(userData.periodos) && userData.periodos.length > 0) {
 
-        document.getElementById("periodos").innerHTML += '<br><strong>Estou disponível: </strong><span onclick="adicionarPeriodo()" class="option">Adcionar</span>'
-        if (Array.isArray(userData.periodos) && userData.periodos.length > 0) {
-            
             userData.periodos.forEach(element => {
-                document.getElementById("periodos").innerHTML += `<p>- ${element}<span onclick="removerDisponibilidade('${element}')" class="option negative"> remover</span></p>`;
+            document.getElementById("periodos").innerHTML += `<p>- ${element}<span onclick="removerDisponibilidade('${element}')" class="option negative"> remover</span></p>`;
             });
-        }
+            }
+
+            document.getElementById("modalidades").innerHTML += '<br><strong>Modalidades: </strong><span onclick="adicionarModalidade()" class="option">Adcionar</span>'
+            if (Array.isArray(userData.periodos) && userData.periodos.length > 0) {
+
+            userData.modalidades.forEach(element => {
+            document.getElementById("modalidades").innerHTML += `<p>- ${element}<span onclick="removerModalidade('${element}')" class="option negative"> remover</span></p>`;
+            });
+            }
     }
 }
 
@@ -529,7 +608,7 @@ function renderCursos(cursos) {
 
 // Função para exibir os cursos na página index
 async function displayCourses(courses) {
-    console.log(courses)
+
     // Garante que courses seja um array antes de continuar
     if (!Array.isArray(courses)) {
         console.warn("Erro: courses não é um array válido!", courses);
@@ -542,6 +621,10 @@ async function displayCourses(courses) {
 
     let ids = [];
     let number = 0
+
+
+
+    
     courses.forEach(course => {
         if (ids.indexOf(course.nome) !== -1) {
             number = number + 1

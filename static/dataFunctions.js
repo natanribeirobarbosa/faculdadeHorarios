@@ -55,38 +55,70 @@ function fetchAllCurses() {
         return []; // Retorna um array vazio em caso de erro
     });
 }
-// Função para obter os cursos de um usuário
+
+// Função para obter os cursos de um professor via POST
 async function getCourses(userId) {
-    document.getElementById('course-list').style.display= 'block'
+
     try {
-        const url = `/allprofessorcourses/${userId}`;
-        const response = await fetch(url);
+        const url = `/allprofessorcourses`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ userId })
+        });
 
         if (!response.ok) {
             throw new Error(`Erro na requisição: ${response.status}`);
         }
 
         const data = await response.json();
-       
 
         if (data.success) {
-            if (data.message) {
-                alert(data.message);
-            }
-
-            // Verifica se "disciplinas" existe e é um array
             if (Array.isArray(data.disciplinas)) {
-                
-                displayCourses(data.disciplinas); // Agora chamamos apenas se for um array válido
+                displayCourses(data.disciplinas);
             } else {
-                console.warn("O campo 'disciplinas' está ausente ou não é um array.");
                 document.getElementById('vagasTitle').innerText = "Nenhuma vaga disponível";
+                document.getElementById('loadingContainer3').style.display = "none";
             }
         } else {
-            alert(data.message || 'Erro ao obter os dados');
+            alert(data.message || "Erro ao obter os dados");
         }
     } catch (error) {
         console.error("Erro ao obter os cursos:", error);
         alert(`Erro ao obter os cursos: ${error.message}`);
     }
 }
+
+
+// Função para obter os cursos com a porcentagem de disciplinas com candidatos
+async function getCordCourses(userId) {
+    try {
+        const url = "/allcordcourses";
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ userId })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erro na requisição: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+           return data.cursos
+
+        } else {
+            console.error("Erro ao obter cursos:", data.message);
+        }
+    } catch (error) {
+        console.error("Erro ao obter os cursos:", error);
+    }
+}
+
+

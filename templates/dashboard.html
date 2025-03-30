@@ -6,7 +6,8 @@
     <title>Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     <script src="{{ url_for('static', filename='dataFunctions.js') }}"></script>
     <script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
 
@@ -39,11 +40,12 @@
         <strong>Seu cargo:</strong> 
         <span id="userCargo">Carregando...</span>
         <span id="licenciaturas"></span>
-        <span id="candidaturas"></span>
-        <span id="periodos"></span>
 
+        <span id="periodos"></span>
+        <span id="modalidades"></span>
 
         <div id="adcionarLic"></div>
+        <span id="candidaturas"></span>
         
 
     </p>
@@ -92,21 +94,7 @@
             <button id="deletarMateria" class="negative" onclick="deletarMateria(cursoAtual)">Deletar</button>
     </div>
 
-    <div onclick="abrirNotificacoes()" id="popup2" class="popup2 notificacoes">
-        <div>
-        <ul>
-            <li>Sem notificações</li>
-            <li>Sem notificações</li>
-            <li>Sem notificações</li>
-            <li>Sem notificações</li>
-   
-            <li>Sem notificações</li>
-            <li>Sem notificações</li>
-        </ul>
-    </div>
-        <h3 id="nomePopup">Notificações<span id="not" class="option negative"></span></h3>
-        
-    </div>
+  
 
     <div class="hidenItems infos divCursos container" id="Cursos">
         <h1 id="cursosEDisciplinas">Cursos e disciplinas <span onclick="toggleSection('Cursos')">mostrar</span><br>
@@ -141,7 +129,7 @@
         //função basica de usuario
         fetchUserData(userId).then(userData => {
             cargo = userData.cargo
-            if(cargo == 'admin' || cargo == 'coordenador'){
+            if(cargo == 'admin'){
               
                 document.getElementById('cargos').style.display = "block"
             
@@ -239,13 +227,7 @@
             }
         });
 
-        document.addEventListener("click", function(event) {
-            let popup = document.getElementById("popup2");
-            if (!popup.contains(event.target)) {
-                fecharNotificacao()
-                
-            }
-        });
+
 
 
 

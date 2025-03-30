@@ -1,0 +1,104 @@
+.dragging {
+    opacity: 0.5;
+}
+
+.dropzone {
+    height: 60px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+}
+
+body {
+    background: linear-gradient(135deg, #109abd, #05052e);
+
+}
+button{
+    transition: 100ms;
+
+    transform: scale(1);  /* Aumenta o tamanho */        }
+button:hover{   
+    transition: 100ms;
+    transform: scale(1.1);  /* Aumenta o tamanho */        }
+    .d1 {
+background-color: #000000; /* roxo escuro suave */
+}
+
+.d2 {
+background-color: #525252; /* vermelho escuro suave */
+}
+
+.d3 {
+background-color: #a6a6a6; /* laranja escuro suave */
+color: black;
+}
+
+.d4 {
+background-color: #4c0000; /* verde escuro suave */
+
+}
+
+.d5 {
+background-color: #7c0000; /* azul escuro suave */
+
+}
+
+.d6 {
+background-color: #ce0000; /* lavanda escuro suave */
+}
+
+.d7 {
+background-color: #8E4F2F; /* coral escuro suave */
+}
+
+.d8 {
+background-color: #7B3F8C; /* roxo escuro suave */
+}
+
+.d9 {
+background-color: #6A5F36; /* oliva escuro suave */
+}
+
+.d10 {
+background-color: #4B6E67; /* azul esverdeado escuro suave */
+}
+
+.d11 {
+background-color: #649F8F; /* verde suave */
+}
+
+.d12 {
+background-color: #7A8FBD; /* azul suave */
+}
+
+.d13 {
+background-color: #A59B9D; /* cinza azulado suave */
+}
+
+.d14 {
+background-color: #B08CDE; /* lavanda claro */
+}
+
+.d15 {
+background-color: #A49E58; /* mostarda suave */
+}
+
+.d16 {
+background-color: #B87756; /* laranja suave */
+}
+
+.d17 {
+background-color: #B5A4D1; /* lilás suave */
+}
+
+.d18 {
+background-color: #98D6BB; /* verde menta suave */
+}
+
+.d19 {
+background-color: #C6A8D0; /* rosa suave */
+}
+
+.d20 {
+background-color: #D2B78E; /* pêssego suave */
+}

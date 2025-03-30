@@ -36,11 +36,79 @@ def login():
 
 
 
+@user_bp.route('/grades/<course>/<id>/<user>', methods=['GET'])
+def render_grades(course, id, user):
+    try:
+        # Buscar o curso pelo ID
+        curso_ref = db.collection('cursos').document(id)
+        curso_doc = curso_ref.get()
 
-# Rota para a interface de download
-@user_bp.route('/grades', methods=['GET'])
-def grades():
-    return render_template('grades.html')
+        if not curso_doc.exists:
+            return jsonify({"success": False, "message": "Curso não encontrado"}), 404
+
+        curso_data = curso_doc.to_dict()
+        disciplinas_refs = curso_data.get('disciplinas', [])  # Array de referências das disciplinas
+
+        candidatos_por_disciplina = {}
+
+        disciplina_index = 1  # Para gerar chaves únicas
+
+        for disciplina_ref in disciplinas_refs:
+            if isinstance(disciplina_ref, firestore.DocumentReference):
+                disciplina_doc = disciplina_ref.get()
+                
+                if disciplina_doc.exists:
+                    disciplina_data = disciplina_doc.to_dict()
+                    disciplina_nome = disciplina_data.get('nome', 'Disciplina desconhecida')
+
+                    # Gerar a chave única para a disciplina
+                    chave_disciplina = f"d{disciplina_index}"
+
+                    # Lista de referências aos candidatos
+                    candidatos_refs = disciplina_data.get('candidatos', [])
+
+                    # Buscar informações reais dos candidatos
+                    candidatos_info = []
+
+                    for i, candidato_ref in enumerate(candidatos_refs, 1):
+                        if isinstance(candidato_ref, firestore.DocumentReference):
+                            candidato_doc = candidato_ref.get()
+                            if candidato_doc.exists:
+                                candidato_data = candidato_doc.to_dict()
+                                candidatos_info.append({
+                                    "nome": candidato_data.get('nome', 'Nome desconhecido'),
+                                    "codigo": candidato_doc.id,
+                                    "ref": chave_disciplina,  
+                                    "chave": f"a{i}"  
+                                })
+
+                    # Adiciona a disciplina com os candidatos formatados
+                    candidatos_por_disciplina[chave_disciplina] = {
+                        "nome_disciplina": disciplina_nome,
+                        "candidatos": candidatos_info,
+                        "ref_disciplina": chave_disciplina  # Adiciona a referência da disciplina
+                    }
+
+                    disciplina_index += 1  # Incrementa a indexação das disciplinas
+
+        # 🔍 Print para Debug
+        print("DADOS ENVIADOS PARA O TEMPLATE:", candidatos_por_disciplina)
+
+        return render_template('grades.html', 
+                               course=course, 
+                               id=id, 
+                               user=user, 
+                               disciplinas=candidatos_por_disciplina)
+
+    except Exception as e:
+        print(f"Erro: {str(e)}")
+        return jsonify({"success": False, "message": "Erro interno no servidor"}), 500
+
+
+
+
+
+
 
 # Edita nome
 @user_bp.route("/editname", methods=["POST"])
@@ -84,6 +152,7 @@ def get_user_data(user_id):
             if user_data.get('cargo', '').lower() == 'professor':
                 licenciaturas_refs = user_data.get('licenciaturas', [])
                 periodos_ref = user_data.get('periodos', [])
+                modalidades_ref = user_data.get('modalidades', [])
                 
                 if isinstance(licenciaturas_refs, list):
                     licenciaturas = set()
@@ -95,9 +164,9 @@ def get_user_data(user_id):
                                 curso_data = curso_doc.to_dict() or {}
                                 nome_disciplina = curso_data.get('nome')
                                 if nome_disciplina:
-                                    licenciaturas.add(nome_disciplina)
+                                     licenciaturas.add((curso_doc.id, nome_disciplina))  # Adiciona ID e nome
 
-                    response['user']['disciplinas'] = list(licenciaturas)
+                    response['user']['licenciaturas'] = list(licenciaturas)
 
                     
                 if isinstance(periodos_ref, list):
@@ -109,6 +178,17 @@ def get_user_data(user_id):
                         periodos.update(periodos_ref)
 
                     response['user']['periodos'] = list(periodos)  # Converte de volta para lista
+
+
+                if isinstance(periodos_ref, list):
+                    modalidades = set()
+                
+                
+                # Verificando se periodos_ref não está vazio
+                if len(modalidades_ref) > 0:  
+                    modalidades.update(modalidades_ref)
+
+                response['user']['modalidades'] = list(modalidades)  # Converte de volta para lista
 
 
 

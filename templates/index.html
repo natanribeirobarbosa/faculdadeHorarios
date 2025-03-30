@@ -6,10 +6,15 @@
     <title>Sistema de Agendamento</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='dataFunctions.js') }}"></script>
     <script src="{{ url_for('static', filename='interactionFunctions.js') }}"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #loadingContainer{
+            display: block;
+        }
+    </style>
   
 </head>
 <body>
@@ -34,10 +39,10 @@
     
 </div>
 
-<div id="course-list">
+<div class="container" id="course-list">
     <h2 id="vagasTitle">Disciplinas disponíveis</h2>
     <section id="vagas">
-        <div id="loadingContainer">
+        <div id="loadingContainer3">
             <div class="spinner"></div>
             <p id="loadingMessage">Carregando...</p>
         </div>
@@ -58,9 +63,43 @@
             
             fetchUserData(ID).then(userData => {
                 if(userData.cargo == 'professor'){
+                    document.getElementById('course-list').style.display = 'block';
+
                     getCourses(ID)
                     
                 }
+                if(userData.cargo == 'coordenador'){
+                    document.getElementById('course-list').style.display = 'block';
+                    document.getElementById('vagasTitle').innerText = 'Grades';
+
+                    getCordCourses(ID).then(cursos => {
+                        
+                        console.log("Lista de cursos recebida:", cursos);
+
+                        const container = document.getElementById("vagas");
+                        container.innerHTML = ""; // Limpa a lista antes de adicionar os novos itens
+
+                        if (cursos.length === 0) {
+                            container.innerHTML = "<p>Nenhum curso encontrado.</p>";
+                            return;
+                        }
+
+                        cursos.forEach(curso => {
+                            const cursoElement = document.createElement("div");
+                            cursoElement.classList.add("curso-item");
+                            cursoElement.innerHTML = `
+                                <h3>${curso.nome}</h3>
+                                <p>Quantidade de vagas com candidatos: ${curso.percentual_preenchido}%</p>
+                                <p>A grade está ${curso.porcentagem_de_mentores}% definida.</p>
+                                <button onclick='window.location.href="/grades/${encodeURIComponent(curso.nome)}/${encodeURIComponent(curso.id)}/${ID}"' class="positive">Editar grade</button>
+                                <hr>
+                            `;
+                            container.appendChild(cursoElement);
+                        });
+                    });
+
+                }
+
                 showContentBasedOnCargo(userData.cargo, userData.nome)
             
             })

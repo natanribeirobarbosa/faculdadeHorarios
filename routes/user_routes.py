@@ -107,10 +107,8 @@ def render_grades(course, id, user):
     
 
 @user_bp.route('/downloads', methods=['GET'])
-def render_dowload():
-    
-
-        return render_template('dowload.html')
+def render_download():
+    return render_template('download.html')
 
 
 

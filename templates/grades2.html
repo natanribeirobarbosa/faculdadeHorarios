@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade de Professores e Matérias</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .dropzone {
+            height: 60px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        body {
+            background: linear-gradient(135deg, #109abd, #05052e);
+
+        }
+        button{
+            transition: 100ms;
+
+            transform: scale(1);  /* Aumenta o tamanho */        }
+        button:hover{
+            transition: 100ms;
+            transform: scale(1.1);  /* Aumenta o tamanho */        }
+    </style>
+
+
+</head>
+
+<body class="bg-gray-100 flex flex-col items-center min-h-screen p-4">
+    <div style="color: aliceblue;">
+        <h1 style="font-family: Arial, Helvetica, sans-serif;"><strong style="font-size: 40px;">{{course}}</strong></h1>
+        </h1>
+    </div>
+
+
+    <!-- Parte Superior: Tabela de Horários -->
+    <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md mb-4">
+
+        <h1 class="text-2xl font-bold text-center mb-4">Grade de Professores e Matérias</h1>
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 p-2 w-1/6"></th>
+                        <th class="border border-gray-300 p-2 w-1/6">Segunda</th>
+                        <th class="border border-gray-300 p-2 w-1/6">Terça</th>
+                        <th class="border border-gray-300 p-2 w-1/6">Quarta</th>
+                        <th class="border border-gray-300 p-2 w-1/6">Quinta</th>
+                        <th class="border border-gray-300 p-2 w-1/6">Sexta</th>
+                    </tr>
+                </thead>
+     
+                <tbody>
+                    <!-- Slot para Matéria -->
+                    <tr>
+                        <th class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100">Matéria</th>
+                        <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
+                        <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
+                    </tr>
+
+                    <style>
+             
+
+             
+                    </style>
+
+
+                    <!-- Slots para Professores -->
+                    <tr>
+                        <th class="border border-gray-300 p-2 w-1/6">Professores</th>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                        <td class="border border-gray-300 p-4 dropzone dropzone-professor"></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Parte Inferior: Lista de Professores e Matérias -->
+    <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold text-center mb-4">Professores</h2>
+        <div class="flex flex-wrap gap-2 justify-center">
+            {% for chave_disciplina, dados in disciplinas.items() %}
+            {% for candidato in dados.candidatos %}
+                <div class="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer font-bold draggable draggable-professor {{candidato.ref}}" draggable="true">
+                    {{ candidato.nome }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        </div>
+
+        <h2 class="text-xl font-bold text-center mt-6 mb-4">Matérias</h2>
+        <div class="flex flex-wrap gap-2 justify-center">
+            {% for chave_disciplina, dados in disciplinas.items() %}
+            {% for disciplina in dados.candidatos %}
+            <div class="bg-gray-700 text-white px-4 py-2 rounded text-center font-bold mt-4 draggable draggable-materia {{ dados.ref_disciplina }}" draggable="true">
+                {{ dados.nome_disciplina }}
+            </div>
+            
+        {% endfor %}
+        </div>
+    </div>
+    <div>
+        <button style="background-color:rgb(71, 71, 71);" onclick="botao()">Limpar</button>
+        <button style="background-color:rgba(0, 68, 255, 0.777);" onclick="botao()">Salvar</button>
+        <style>
+            button {
+                color: rgb(255, 255, 255);
+                border-radius: 8%;
+                border: 40px black;
+                margin: 30px 10px;
+                padding: 10px;
+            }
+        </style>
+    </div>
+
+
+    <script>
+
+
+        function setupDragAndDropWithColor(draggableClass, dropzoneClass) {
+            document.querySelectorAll(draggableClass).forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text', item.innerText);
+                    e.dataTransfer.setData('color', window.getComputedStyle(item).backgroundColor);
+                    e.target.classList.add('dragging');
+                });
+
+                item.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+            });
+
+            document.querySelectorAll(dropzoneClass).forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    let itemNome = e.dataTransfer.getData('text');
+                    let itemCor = e.dataTransfer.getData('color');
+                    if (zone.innerText.trim() === "") {
+                        zone.innerText = itemNome;
+                        zone.style.backgroundColor = itemCor;
+                        zone.classList.add('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+                    }
+                });
+
+                zone.addEventListener('dblclick', () => {
+                    zone.innerText = "";
+                    zone.style.backgroundColor = "";
+                    zone.classList.remove('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+                });
+            });
+        }
+
+        // Substitua a chamada anterior por esta nova função
+        setupDragAndDropWithColor('.draggable-professor', '.dropzone-professor');
+        setupDragAndDropWithColor('.draggable-materia', '.dropzone-materia')
+        function enableBlockRemoval(dropzoneClass) {
+            document.querySelectorAll(dropzoneClass).forEach(zone => {
+                zone.addEventListener('click', (e) => {
+                    if (e.target.innerText.trim() !== "") {
+                        e.target.innerText = "";
+                        e.target.style.backgroundColor = "";
+                        e.target.classList.remove('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+                    }
+                });
+            });
+        }
+        function setupDragAndDropWithColor(draggableClass, dropzoneClass) {
+            document.querySelectorAll(draggableClass).forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text', item.innerText);
+                    e.dataTransfer.setData('color', window.getComputedStyle(item).backgroundColor);
+                    e.dataTransfer.setData('type', draggableClass.includes('materia') ? 'materia' : 'professor');
+                    e.target.classList.add('dragging');
+                });
+
+                item.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+            });
+
+            document.querySelectorAll(dropzoneClass).forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault(); // Permite o drop
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    let itemNome = e.dataTransfer.getData('text');
+                    let itemCor = e.dataTransfer.getData('color');
+                    let itemType = e.dataTransfer.getData('type');
+
+                    // Permitir drop apenas para matérias nas zonas de matérias
+                    if (itemType === 'materia' && !zone.classList.contains('dropzone-materia')) {
+                        return; // Impede o drop se a zona não for a dropzone-materia
+                    }
+
+                    // Impedir que professores sejam adicionados em zonas de matérias
+                    if (itemType === 'professor' && zone.classList.contains('dropzone-materia')) {
+                        return; // Impede o drop se for professor e a zona for para matérias
+                    }
+
+                    // Verifica se a zona está vazia e adiciona o item
+                    if (zone.innerText.trim() === "") {
+                        zone.innerText = itemNome;
+                        zone.style.backgroundColor = itemCor;
+                        zone.classList.add('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+                    }
+                });
+
+                zone.addEventListener('dblclick', () => {
+                    zone.innerText = "";
+                    zone.style.backgroundColor = "";
+                    zone.classList.remove('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
+                });
+            });
+        }
+
+        // Aplicar apenas nas respectivas zonas
+        setupDragAndDropWithColor('.draggable-professor', '.dropzone-professor');
+        setupDragAndDropWithColor('.draggable-materia', '.dropzone-materia');
+
+        // Aplicar apenas nas respectivas zonas
+        setupDragAndDropWithColor('.draggable-professor', '.dropzone-professor');
+        setupDragAndDropWithColor('.draggable-materia', '.dropzone-materia');
+
+
+        enableBlockRemoval('.dropzone-professor');
+        enableBlockRemoval('.dropzone-materia');
+        function botao() {
+            // Seletor para pegar todos os elementos com as classes especificadas
+            const elements = document.querySelectorAll('.border.border-gray-300.p-4.dropzone.dropzone-professor.text-white.text-center.font-bold.p-2.rounded');
+            const elements2 = document.querySelectorAll('.border.border-gray-300.p-2.dropzone.dropzone-materia.bg-gray-100.text-white.text-center.font-bold.rounded');
+
+
+
+
+            // Itera sobre os elementos encontrados
+            elements.forEach(element => {
+                // Remove o background color
+                element.style.backgroundColor = 'transparent';
+
+                // Remove o texto dentro do elemento
+                element.textContent = '';
+            });
+
+
+            // Itera sobre os elementos encontrados
+            elements2.forEach(element => {
+                // Remove o background color
+                element.style.backgroundColor = 'rgba(243,244,246,var(--tw-bg-opacity))';
+
+                // Remove o texto dentro do elemento
+                element.textContent = '';
+            });
+        }
+
+
+    </script>
+
+</body>
+
+</html>

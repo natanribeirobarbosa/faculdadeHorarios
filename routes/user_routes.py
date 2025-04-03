@@ -85,6 +85,7 @@ def render_grades(course, id, user):
                     # Adiciona a disciplina com os candidatos formatados
                     candidatos_por_disciplina[chave_disciplina] = {
                         "nome_disciplina": disciplina_nome,
+                        "codigo": disciplina_doc.id,
                         "candidatos": candidatos_info,
                         "ref_disciplina": chave_disciplina  # Adiciona a referência da disciplina
                     }
@@ -224,39 +225,69 @@ def get_user_data(user_id):
 
 
 
-# Rota para todos os cursos
 @user_bp.route('/allcourses', methods=['GET'])
 def get_all_courses():
     try:
+        print("Iniciando busca por cursos...")
+
+        # Buscar todos os cursos
         cursos_ref = db.collection('cursos')
         cursos = cursos_ref.get()
-        
-        cursos_list = []
 
+        cursos_list = []
+        print(f"Total de cursos encontrados: {len(cursos)}")
+
+        # Criar uma lista de todas as referências de disciplinas para buscar de uma vez
+        disciplinas_refs = []
+        for curso in cursos:
+            curso_data = curso.to_dict()
+            if not curso_data:
+                print(f"Curso {curso.id} sem dados.")
+                continue
+
+            disciplinas_refs.extend([
+                ref for ref in curso_data.get("disciplinas", [])
+                if isinstance(ref, firestore.DocumentReference)
+            ])
+
+        # Buscar todas as disciplinas de uma vez para evitar múltiplas chamadas
+        disciplinas_docs = {doc.id: doc.to_dict() for doc in db.get_all(disciplinas_refs)}
+
+        # Processar cursos e disciplinas
         for curso in cursos:
             curso_data = curso.to_dict()
             if not curso_data:
                 continue
 
-            disciplinas_lista = []
-            for ref in curso_data.get("disciplinas", []):
-                if isinstance(ref, firestore.DocumentReference):
-                    disciplina_doc = ref.get()
-                    if disciplina_doc.exists:
-                        disciplina_data = disciplina_doc.to_dict()
-                        disciplina_data["id"] = disciplina_doc.id
-                        disciplinas_lista.append(disciplina_data)
-            
+            print(f"Processando curso: {curso.id} - {curso_data.get('nome', 'Desconhecido')}")
+
+            disciplinas_info = [
+                {
+                    "id": ref.id,
+                    "carga": disciplinas_docs.get(ref.id, {}).get("carga"),
+                    "modalidade": disciplinas_docs.get(ref.id, {}).get("modalidade"),
+                    "nome": disciplinas_docs.get(ref.id, {}).get("nome")
+                }
+                for ref in curso_data.get("disciplinas", [])
+                if isinstance(ref, firestore.DocumentReference) and ref.id in disciplinas_docs
+            ]
+
             cursos_list.append({
                 "id": curso.id,
                 "nome": curso_data.get("nome", "Desconhecido"),
-                "disciplinas": disciplinas_lista
+                "disciplinas": disciplinas_info
             })
 
-        return jsonify({"success": True, "cursos": cursos_list})
+        response = {"success": True, "cursos": cursos_list}
+        print("Resposta gerada com sucesso:", response)
+        return jsonify(response)
 
     except Exception as e:
+        print("Erro ao buscar cursos:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+
 
 
 # Configurando a aplicação principal

@@ -41,10 +41,8 @@ function fetchAllCurses() {
     return fetch('/allcourses').then(response => response.json())
     .then(data => {
         if (data.success) {
-            
+            console.log('cursos'+data.cursos[0])
             renderCursos(data.cursos)
-            //return data.cursos; // Retorna os cursos para outra função
-
         } else {
             alert("Erro ao carregar cursos.");
             return []; // Retorna um array vazio caso haja erro

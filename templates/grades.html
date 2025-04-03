@@ -13,7 +13,7 @@
 
     <body class="bg-gray-100 flex flex-col items-center min-h-screen p-4">
         <div style="color: aliceblue;">
-            <h1 style="font-family: Arial, Helvetica, sans-serif;"><strong style="font-size: 40px;">{{course}}</strong>
+            <h1 style="font-family: Arial, Helvetica, sans-serif;"><strong style="font-size: 40px; " id = "curso">{{course}}</strong>
             </h1>
         </div>
 
@@ -23,7 +23,7 @@
 
             <h1 class="text-2xl font-bold text-center mb-4">Grade de Professores e Matérias</h1>
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse border border-gray-300">
+                <table class="w-full border-collapse border border-gray-300" id="table">
                     <thead>
                         <tr class="bg-gray-200">
                             <th class="border border-gray-300 p-2 w-1/6"></th>
@@ -38,7 +38,7 @@
                     <tbody>
                         <!-- Slot para Matéria -->
                         <tr>
-                            <th class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100">Matéria</th>
+                            <th class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-101">Matéria</th>
                             <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
                             <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
                             <td class="border border-gray-300 p-2 dropzone dropzone-materia bg-gray-100"></td>
@@ -83,7 +83,9 @@
                 {% for candidato in dados.candidatos %}
                     <div class="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer font-bold draggable draggable-professor {{candidato.ref}}" draggable="true">
                         {{ candidato.nome }}
+                        <span style="display: none;">{{candidato.codigo}}</span>
                     </div>
+                    
                 {% endfor %}
             {% endfor %}
          
@@ -99,18 +101,20 @@
             <div class="flex flex-wrap gap-2 justify-center">
                 <!-- Iterando sobre as matérias -->
                 {% for chave_disciplina, dados in disciplinas.items() %}
-                <!-- Nome da disciplina - Aparece apenas uma vez -->
-                <div class="bg-gray-700 text-white px-4 py-2 rounded text-center font-bold mt-4 {{ dados.ref_disciplina }}">
+                <div id="" class="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer draggable draggable-materia {{ dados.ref_disciplina }}" draggable="true">
                     {{ dados.nome_disciplina }}
+                    <span style="display: none;">{{dados.codigo}}</span>
                 </div>
-            {% endfor %}
+                
+                {% endfor %}
+          
             
             
             </div>
         </div>
         <div>
             <button style="background-color:rgb(71, 71, 71);" onclick="botao()">Limpar</button>
-            <button style="background-color:rgba(0, 68, 255, 0.777);" onclick="botao()">Salvar</button>
+            <button style="background-color:rgba(0, 68, 255, 0.777);" onclick="criarMapa()">Salvar</button>
             <style>
                 button {
                     color: rgb(255, 255, 255);
@@ -124,44 +128,6 @@
 
 
         <script>
-
-
-            function setupDragAndDropWithColor(draggableClass, dropzoneClass) {
-                document.querySelectorAll(draggableClass).forEach(item => {
-                    item.addEventListener('dragstart', (e) => {
-                        e.dataTransfer.setData('text', item.innerText);
-                        e.dataTransfer.setData('color', window.getComputedStyle(item).backgroundColor);
-                        e.target.classList.add('dragging');
-                    });
-
-                    item.addEventListener('dragend', (e) => {
-                        e.target.classList.remove('dragging');
-                    });
-                });
-
-                document.querySelectorAll(dropzoneClass).forEach(zone => {
-                    zone.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                    });
-
-                    zone.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        let itemNome = e.dataTransfer.getData('text');
-                        let itemCor = e.dataTransfer.getData('color');
-                        if (zone.innerText.trim() === "") {
-                            zone.innerText = itemNome;
-                            zone.style.backgroundColor = itemCor;
-                            zone.classList.add('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
-                        }
-                    });
-
-                    zone.addEventListener('dblclick', () => {
-                        zone.innerText = "";
-                        zone.style.backgroundColor = "";
-                        zone.classList.remove('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
-                    });
-                });
-            }
 
             // Substitua a chamada anterior por esta nova função
             setupDragAndDropWithColor('.draggable-professor', '.dropzone-professor');
@@ -178,9 +144,10 @@
                 });
             }
             function setupDragAndDropWithColor(draggableClass, dropzoneClass) {
+                console.log('2')
                 document.querySelectorAll(draggableClass).forEach(item => {
                     item.addEventListener('dragstart', (e) => {
-                        e.dataTransfer.setData('text', item.innerText);
+                        e.dataTransfer.setData('text', item.innerHTML);
                         e.dataTransfer.setData('color', window.getComputedStyle(item).backgroundColor);
                         e.dataTransfer.setData('type', draggableClass.includes('materia') ? 'materia' : 'professor');
                         e.target.classList.add('dragging');
@@ -214,7 +181,7 @@
 
                         // Verifica se a zona está vazia e adiciona o item
                         if (zone.innerText.trim() === "") {
-                            zone.innerText = itemNome;
+                            zone.innerHTML = itemNome;
                             zone.style.backgroundColor = itemCor;
                             zone.classList.add('text-white', 'text-center', 'font-bold', 'p-2', 'rounded');
                         }
@@ -239,12 +206,14 @@
 
             enableBlockRemoval('.dropzone-professor');
             enableBlockRemoval('.dropzone-materia');
+
+           
             function botao() {
                 // Seletor para pegar todos os elementos com as classes especificadas
+               
+
                 const elements = document.querySelectorAll('.border.border-gray-300.p-4.dropzone.dropzone-professor.text-white.text-center.font-bold.p-2.rounded');
                 const elements2 = document.querySelectorAll('.border.border-gray-300.p-2.dropzone.dropzone-materia.bg-gray-100.text-white.text-center.font-bold.rounded');
-
-
 
 
                 // Itera sobre os elementos encontrados
@@ -266,6 +235,63 @@
                     element.textContent = '';
                 });
             }
+            
+
+            function criarMapa() {
+    // Seleciona os elementos na página
+    const elementsProfessores = document.querySelectorAll('.border.border-gray-300.p-4.dropzone.dropzone-professor');
+    const elementsMaterias = document.querySelectorAll('.border.border-gray-300.p-2.dropzone.dropzone-materia.bg-gray-100');
+    const curso = document.getElementById('curso').innerText
+    console.log(elementsProfessores)
+
+    let professores = [];
+    let materias = [];
+
+    // Coleta os dados dos primeiros 5 elementos
+    for (let i = 0; i < 5; i++) {
+        const materiaSpan = elementsMaterias[i].querySelector('span');
+        const ProfessorSpan = elementsProfessores[i].querySelector('span');
+
+    if (materiaSpan) {
+        materias.push(materiaSpan.innerText); // Adiciona ao array de matérias
+    }
+    if (ProfessorSpan) {
+        professores.push(ProfessorSpan.innerText); // Adiciona ao array de matérias
+       
+    }
+
+
+    }
+
+    // Monta os dados para envio
+    const data = {
+        
+        professores: professores,
+        materias: materias,
+        curso: curso
+    };
+console.log(data)
+
+    fetch('/salvarGrade', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log("Dados salvos com sucesso:", result);
+        alert("Grade salva com sucesso!");
+    })
+    .catch(error => {
+        console.error("Erro ao salvar:", error);
+        alert("Erro ao salvar a grade.");
+    });
+}
+
+
+
 
 
         </script>

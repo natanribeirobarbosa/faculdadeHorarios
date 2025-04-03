@@ -115,6 +115,148 @@ def get_all_users(user_id):
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+    
+
+@admin_bp.route('/addDiscipline', methods=['POST'])
+def add_discipline():
+    try:
+        data = request.get_json()
+        
+        # Verificar se todos os campos obrigatórios foram enviados
+        nome = data.get("nome")
+        carga = data.get("carga")
+        modalidade = data.get("modalidade")
+        cursos = data.get("cursos", [])  # Lista de IDs dos cursos
+        user_id = data.get("userId")  # ID do usuário que está tentando adicionar
+
+        if not nome or not carga or not modalidade:
+            return jsonify({"success": False, "message": "Todos os campos são obrigatórios."}), 400
+        
+        # Verificar se o usuário tem cargo 'admin' na coleção 'users'
+        user_ref = db.collection("users").document(user_id)  # Utilizando a coleção 'users'
+        user_data = user_ref.get().to_dict()
+        
+        if not user_data or user_data.get("cargo") != "admin":  # Verifica se o cargo é 'admin'
+            return jsonify({"success": False, "message": "Você não tem permissão para adicionar disciplinas."}), 403
+
+        # Criar a nova disciplina
+        disciplina_ref = db.collection("disciplinas").add({
+            "nome": nome,
+            "carga": carga,
+            "modalidade": modalidade,
+            "criado_por": user_id  # Opcional: registrar quem adicionou
+        })[1]  # disciplina_ref contém a referência ao novo documento
+
+        disciplina_id = disciplina_ref.id
+        
+        # Adicionar a disciplina nos cursos informados
+        for curso_id in cursos:
+            curso_ref = db.collection("cursos").document(curso_id)
+            curso_data = curso_ref.get().to_dict()
+            if curso_data:
+                disciplinas_atualizadas = curso_data.get("disciplinas", [])
+                disciplinas_atualizadas.append(disciplina_ref)  # Adiciona a referência
+                curso_ref.update({"disciplinas": disciplinas_atualizadas})
+
+        return jsonify({"success": True, "message": "Disciplina adicionada com sucesso!", "id": disciplina_id})
+
+    except Exception as e:
+        print("Erro ao adicionar disciplina:", str(e))
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route('/deleteDiscipline', methods=['DELETE'])
+def delete_discipline():
+    try:
+        data = request.get_json()  # Obter o corpo da requisição
+        disciplina_id = data.get("disciplinaId")  # ID da disciplina a ser deletada
+        user_id = data.get("userId")  # ID do usuário que está tentando deletar
+        cursos = data.get("cursos", [])  # Lista de cursos (caso necessário para atualização)
+
+        # Verificar se o usuário tem cargo 'admin'
+        user_ref = db.collection("users").document(user_id)  # Utilizando a coleção 'users'
+        user_data = user_ref.get().to_dict()
+        
+        if not user_data or user_data.get("cargo") != "admin":  # Verifica se o cargo é 'admin'
+            return jsonify({"success": False, "message": "Você não tem permissão para deletar disciplinas."}), 403
+        
+        # Referência do documento da disciplina que será deletada
+        disciplina_ref = db.collection("disciplinas").document(disciplina_id)
+        
+        # Verifica se a disciplina existe
+        if not disciplina_ref.get().exists:
+            return jsonify({"success": False, "message": "Disciplina não encontrada."}), 404
+        
+        # Excluir o documento da disciplina
+        disciplina_ref.delete()
+        
+        # Remover a referência dessa disciplina de todos os cursos
+        cursos_ref = db.collection("cursos")
+        cursos = cursos_ref.get()
+        
+        for curso in cursos:
+            curso_data = curso.to_dict()
+            if "disciplinas" in curso_data:
+                # Filtra a lista de disciplinas removendo a referência da disciplina deletada
+                disciplinas_atualizadas = [
+                    ref for ref in curso_data["disciplinas"]
+                    if ref.id != disciplina_id
+                ]
+                if len(disciplinas_atualizadas) != len(curso_data["disciplinas"]):
+                    # Atualiza o curso com a nova lista de disciplinas
+                    db.collection("cursos").document(curso.id).update({
+                        "disciplinas": disciplinas_atualizadas
+                    })
+
+        return jsonify({"success": True, "message": "Disciplina e referências removidas com sucesso."})
+    
+    except Exception as e:
+        print("Erro ao excluir disciplina:", str(e))
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@admin_bp.route('/salvarGrade', methods=['POST'])
+def salvar_grade():
+    try:
+        data = request.json
+        user_id = request.cookies.get("userId")
+        professores = data.get("professores", [])
+        materias = data.get("materias", [])
+        curso = data.get("curso")
+
+        user_ref = db.collection('users').document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists or user_doc.to_dict().get("cargo") != "coordenador":
+            return jsonify({"error": "Acesso negado. Apenas coordenadores podem salvar a grade."}), 403
+
+        dias_semana = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira"]
+        nova_grade = {}
+
+        for i, materia_id in enumerate(materias):
+            professor_id = f"users/{professores[i]}" if i < len(professores) else None
+            dia = dias_semana[i % len(dias_semana)]
+
+            materia_ref = db.collection('disciplinas').document(materia_id)
+            materia_doc = materia_ref.get()
+
+            if not materia_doc.exists:
+                return jsonify({"error": f"Disciplina {materia_id} não encontrada."}), 400
+
+            materia_data = materia_doc.to_dict()
+            nova_grade[materia_data["nome"]] = {
+                "dia": dia,
+                "carga": materia_data.get("carga"),
+                "professor": professor_id,
+                "modalidade": materia_data.get("modalidade")
+            }
+
+        db.collection('grades').document(curso).set(nova_grade)
+
+        return jsonify({"message": "Grade salva com sucesso!"})
+
+    except Exception as e:
+        print(f"Erro ao salvar a grade: {e}")
+        return jsonify({"error": "Erro ao salvar a grade."}), 500
+
 
 # Registrando o Blueprint
 app.register_blueprint(admin_bp, url_prefix='/admin')

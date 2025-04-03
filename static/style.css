@@ -1,3 +1,6 @@
+
+
+
 body {
   font-family: 'Roboto', sans-serif;
   display: flex;
@@ -6,39 +9,62 @@ body {
   height: auto;
   background: linear-gradient(135deg, #109abd, #05052e);
   min-height: 100vh;
-
+  
   flex-direction: column;
 }
+hr{
+  border-top-width: 2px;
 
+}
 h1{
   font-size: 24px;
-
+  font-weight: bold   ;
+  margin: 16px 0px;
+  font-family: "DynaPuff", system-ui;
+  font-optical-sizing: auto;
+  font-weight: bold;
+  font-style: normal;
+  font-variation-settings:  "wdth" 100;
 }
 
 #login{
-  display: flex
-  ;
+  display: flex;  
+
       flex-direction: column;
 }
-
+#cursos{
+  display: flex;
+      flex-direction: column;
+      gap: 30px;
+}
 
 p, strong{
-  font-size:14px;
+  font-size:18px;
 }
 
 h2{
-  font-size: 15px;
+  font-size: 18px;
+  font-weight: bold;
 }
 .container {
+  
   margin-top: 20px;
   background: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
-  width: 300px;
+  width: 100%;
+  max-width: 396px;
   display: flex;
   flex-direction: column;
+}
+
+input{
+  border-radius: 6px;
+  font-size: 17px;
+  padding: 14px 16px;
+  border: 1px solid gray;
 }
 
 .editable {
@@ -93,13 +119,13 @@ animation: shake 0.5s ease infinite;
 }
 button{
   margin-top: 10px;
-  padding: 10px;
+  padding: 15px;
   width: 100%;
-  
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 18px;
 }
 .positive:hover {
   background: #0056b3;
@@ -213,7 +239,6 @@ span.option.positive{
   margin: 10px 0;
   border: 0.5px solid #212121;
   border-radius: 4px;
-  box-sizing: border-box;
 }
 .popup button {
   color: white;
@@ -245,15 +270,7 @@ span.option.positive{
 
 
 
-.infos{
-  width: 100%;
-  max-width: 300px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 20px;
-  background-color: #ffffff6b;
-}
+
 
 
 #Cursos{

@@ -244,9 +244,9 @@ function adicionarMateria(curso) {
         .then(response => response.json())
         .then(data => {
         if (data.success) {
-            location.reload();
+            alert('Disciplina adicionada com sucesso! recarregue para ver as modificações!')
         } else {
-        alert("Erro adicionar usuario!");
+        alert("Erro adicionar disciplina!");
         }
         })
         .catch(error => console.error("Erro na adição:", error))
@@ -576,10 +576,12 @@ function renderCursos(cursos) {
       
         
         const cursoTitle = document.createElement("h2");
+        const linha = document.createElement("hr");
         cursoTitle.innerHTML = curso.nome + ` <span class="numeroDoCurso"> (${curso.id})</span> (${curso.disciplinas.length})`
 
 
-        
+        cursosContainer.appendChild(linha);
+
         cursosContainer.appendChild(cursoTitle);
 
         // Criando a lista de disciplinas (ul)

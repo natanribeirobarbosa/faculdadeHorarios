@@ -104,6 +104,14 @@ def render_grades(course, id, user):
     except Exception as e:
         print(f"Erro: {str(e)}")
         return jsonify({"success": False, "message": "Erro interno no servidor"}), 500
+    
+
+@user_bp.route('/downloads', methods=['GET'])
+def render_dowload():
+    
+
+        return render_template('dowload.html')
+
 
 
 

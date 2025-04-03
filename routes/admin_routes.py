@@ -232,7 +232,7 @@ def salvar_grade():
         nova_grade = {}
 
         for i, materia_id in enumerate(materias):
-            professor_id = f"users/{professores[i]}" if i < len(professores) else None
+            professor_ref = db.collection("users").document(professores[i]) if i < len(professores) else None
             dia = dias_semana[i % len(dias_semana)]
 
             materia_ref = db.collection('disciplinas').document(materia_id)
@@ -245,13 +245,22 @@ def salvar_grade():
             nova_grade[materia_data["nome"]] = {
                 "dia": dia,
                 "carga": materia_data.get("carga"),
-                "professor": professor_id,
+                "professor": professor_ref,
                 "modalidade": materia_data.get("modalidade")
             }
 
-        db.collection('grades').document(curso).set(nova_grade)
+        # Obtém a grade atual
+        doc_ref = db.collection('grades').document(curso)
+        doc = doc_ref.get()
 
-        return jsonify({"message": "Grade salva com sucesso!"})
+        if doc.exists:
+            grade_atual = doc.to_dict()  # Obtém os dados existentes
+            grade_atual.update(nova_grade)  # Atualiza os repetidos e adiciona os novos
+            doc_ref.set(grade_atual)  # Salva de volta
+        else:
+            doc_ref.set(nova_grade)  # Cria a grade se não existir
+
+        return jsonify({"message": "Grade salva ou atualizada com sucesso!"})
 
     except Exception as e:
         print(f"Erro ao salvar a grade: {e}")

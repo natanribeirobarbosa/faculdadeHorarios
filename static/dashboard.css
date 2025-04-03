@@ -1,0 +1,26 @@
+.container.dashboard{
+    max-width: 450px;
+}
+
+.infos{
+    display: flex
+    ;
+        flex-direction: column;
+        gap: 30px;
+}
+
+#licenciaturas{
+    display: none;
+}
+#periodos{
+    display: none;
+}
+#modalidades{
+    display: none;
+}
+#candidaturas{
+    display: none;
+}
+#adcionarLic{
+    display: none;
+}

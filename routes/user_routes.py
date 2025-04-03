@@ -272,7 +272,7 @@ def get_all_courses():
                     "id": ref.id,
                     "carga": disciplinas_docs.get(ref.id, {}).get("carga"),
                     "modalidade": disciplinas_docs.get(ref.id, {}).get("modalidade"),
-                    "nome": disciplinas_docs.get(ref.id, {}).get("nome")
+                    "nome": disciplinas_docs.get(ref.id, {}).get("nome"),
                 }
                 for ref in curso_data.get("disciplinas", [])
                 if isinstance(ref, firestore.DocumentReference) and ref.id in disciplinas_docs
@@ -293,6 +293,42 @@ def get_all_courses():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+
+@user_bp.route('/getGrades/<curso>', methods=['GET'])
+def get_grades(curso):
+    db_ref = firestore.client().collection('grades').document(curso)
+    doc = db_ref.get()
+
+    if not doc.exists:
+        return jsonify({"erro": "Grade não encontrada"}), 404
+
+    data = doc.to_dict()
+
+    for disciplina, info in data.items():  
+        professor_ref = info.get("professor")  # Obtém a referência do professor
+        
+        if isinstance(professor_ref, firestore.DocumentReference):  
+            professor_doc = professor_ref.get()  
+            if professor_doc.exists:  
+                info["professor"] = professor_doc.to_dict().get("nome", "Sem nome")  # Substitui pela string do nome
+            else:
+                info["professor"] = "Desconhecido"
+
+    return jsonify(data)
+
+
+
+@user_bp.route('/getCursosDowload/', methods=['GET'])
+def get_cursos_download():
+    try:
+        grades_ref = db.collection('grades')
+        docs = grades_ref.stream()
+        
+        ids = [doc.id for doc in docs]
+        print(ids)
+        return jsonify({"ids": ids}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 

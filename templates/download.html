@@ -5,35 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grades de horários</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='grades.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96">
         <h1 class="text-2xl font-bold text-center mb-4">Grades de horários</h1>
         <label class="block text-gray-700 font-semibold mb-2" for="grade">Selecione a grade:</label>
-        <select id="grade" class="w-full p-2 border rounded mb-4">
-            <option value="ADS_Matutino">Análise e Desenvolvimento de Sistemas (ADS) - Matutino</option>
-            <option value="ADS_Noturno">Análise e Desenvolvimento de Sistemas (ADS) - Noturno</option>
-            <option value="EDS_Matutino">Engenharia de Software (EDS) - Matutino</option>
-            <option value="EDS_Noturno">Engenharia de Software (EDS) - Noturno</option>
+        <select id="grade1" class="w-full p-2 border rounded mb-4">
+         
         </select>
-        <button onclick="baixarGrade('txt')" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2">Baixar TXT</button>
-        <button onclick="baixarGrade('pdf')" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-700 transition duration-300">Baixar PDF</button>
+   
+        
+        <button onclick="baixarGrade('txt')" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300">Baixar TXT</button>
+        <button onclick="baixarGrade('pdf')" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300">Baixar PDF</button>
+        <button class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-700 transition duration-300" style="margin-top: 10px;" onclick="window.location.href='/'">Voltar</button>
     </div>
     
     <script>
-        function baixarGrade(formato) {
-            let gradeSelecionada = document.getElementById('grade').value;
-            let detalhes = {
-                "ADS_Matutino": "Análise e Desenvolvimento de Sistemas (Matutino) - Aulas das 08:00 às 12:00",
-                "ADS_Noturno": "Análise e Desenvolvimento de Sistemas (Noturno) - Aulas das 19:00 às 22:30",
-                "EDS_Matutino": "Engenharia de Software (Matutino) - Aulas das 08:00 às 12:00",
-                "EDS_Noturno": "Engenharia de Software (Noturno) - Aulas das 19:00 às 22:30"
+    
+    async function baixarGrade(formato) {
+        try {
+            let gradeSelecionada = document.getElementById('grade1').value;
+            let detalhes = await fetchData(); // Obtém os dados da API
+    
+            let diasSemana = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira"];
+            let disciplinasPorDia = {
+                "segunda-feira": [],
+                "terça-feira": [],
+                "quarta-feira": [],
+                "quinta-feira": [],
+                "sexta-feira": []
             };
-
-            let conteudo = `Grade de Horários Selecionada:\n\n${detalhes[gradeSelecionada]}`;
-
+    
+            // Organiza as disciplinas nos dias corretos
+            Object.entries(detalhes).forEach(([disciplina, dados]) => {
+                if (disciplinasPorDia[dados.dia]) {
+                    disciplinasPorDia[dados.dia].push(`${disciplina} (${dados.modalidade}) - ${dados.carga}h ${dados.professor}`);
+                }
+            });
+    
             if (formato === 'txt') {
+                let conteudo = `📌 Grade de Horários: ${gradeSelecionada}\n\n`;
+    
+                diasSemana.forEach(dia => {
+                    conteudo += `📅 ${dia}:\n`;
+                    if (disciplinasPorDia[dia].length > 0) {
+                        disciplinasPorDia[dia].forEach(disciplina => {
+                            conteudo += `   - ${disciplina}\n`;
+                        });
+                    } else {
+                        conteudo += `   Nenhuma disciplina.\n`;
+                    }
+                    conteudo += `\n`;
+                });
+    
                 let blob = new Blob([conteudo], { type: 'text/plain' });
                 let link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
@@ -42,17 +72,105 @@
                 link.click();
                 document.body.removeChild(link);
             } else if (formato === 'pdf') {
-                const { jsPDF } = window.jspdf;
-                let doc = new jsPDF();
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(16);
-                doc.text("Grade de Horários", 10, 20);
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "normal");
-                doc.text(detalhes[gradeSelecionada], 10, 40);
-                doc.save(`Grade_${gradeSelecionada}.pdf`);
-            }
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(document.getElementById('grade1').value, 10, 20);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "normal");
+
+    let startY = 40;
+
+    // Cria cabeçalho da tabela
+    let headers = diasSemana;
+
+    let body = diasSemana.map(dia => {
+    return disciplinasPorDia[dia].map(dados => {
+        console.log("Dados recebidos:", dados);  // Depuração
+        let partes = dados.split("|");
+    
+        let [disciplina, modalidade, carga, professor] = partes;
+        return `${disciplina}`;
+    }).join("\n") || "Nenhuma";
+});
+
+
+doc.autoTable({
+    head: [headers],
+    startY: startY,
+    body: [body],
+    styles: { fontSize: 10 },  // Tamanho da fonte
+    theme: 'grid',  // Mantém o estilo da tabela
+    
+    headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255] },  // Azul no cabeçalho
+    bodyStyles: { fillColor: [240, 240, 240] },  // Cinza claro no corpo
+    alternateRowStyles: { fillColor: [255, 255, 255] }  // Linhas alternadas brancas
+});
+
+doc.save(`Grade_${gradeSelecionada}.pdf`);
+
+}
+
+        } catch (error) {
+            console.error("Erro ao gerar arquivo:", error);
         }
+    }
+    
+    
+
+    
+// Exemplo de uso:
+// gerarArquivo('pdf', 'Cálculo fundamental');
+// gerarArquivo('txt', 'Inglês Técnico');
+
+
+        window.onload = function () {
+    fetchCursos();
+};
+
+function fetchCursos() {
+    let curso = document.getElementById('grade1').value
+
+    fetch('/getCursosDowload/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const gradeSelect = document.getElementById('grade1');
+    data.ids.forEach(element => {
+        gradeSelect.innerHTML += `<option value="${element}">${element}</option>`;
+    });
+        })
+        .catch(error => {
+            console.error('Erro ao buscar os dados:', error);
+        });
+}
+
+async function fetchData() {
+    let curso = document.getElementById('grade1').value;
+    let url = '/getGrades/' + encodeURIComponent(curso);
+
+    try {
+        let response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Erro: ${response.status}`);
+        }
+        let data = await response.json();
+        console.log('Dados recebidos:', data);
+        return data;  // ✅ Agora os dados são retornados corretamente
+    } catch (error) {
+        console.error('Erro ao buscar os dados:', error);
+        return {}; // Retorna um objeto vazio para evitar erros
+    }
+}
+
+
+        
     </script>
 </body>
 </html>

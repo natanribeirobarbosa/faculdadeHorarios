@@ -335,17 +335,17 @@ console.log(resultadoJSON)
 //-----------------------------------dashboard---------------------
 
 function adicionarLicenciaturas(){
-    if(document.getElementById("adcionarLic").innerHTML == ''){
-        document.getElementById("adcionarLic").innerHTML += `
+    document.getElementById("adcionarLic").style.display = "block"
+
+  
+        document.getElementById("adcionarLic").innerHTML = `
         <span>Curso</span>
-        <select id="curso">
+        <select id="curso" class="option">
             <option value="001">ADS</option>
             <option value="002">Engenharia de Software</option>
         </select>
         <button class="positive option" onclick="addLicenciatura()">Enviar</button>`;
-    }else{
-        document.getElementById("adcionarLic").innerHTML = ''
-    }   
+    
 }
 
 async function removerLicenciatura(licenciaturaId) {
@@ -372,36 +372,35 @@ async function removerLicenciatura(licenciaturaId) {
 }
 
 
-
 function adicionarPeriodo(){
-    if(document.getElementById("adcionarLic").innerHTML == ''){
-        document.getElementById("adcionarLic").innerHTML += `
+    document.getElementById("adcionarLic").style.display = "block"
+
+    let adcionarLic = document.getElementById("adcionarLic");
+ 
+        adcionarLic.innerHTML = `
         <span>Periodo</span>
-        <select id="disponibilidade">
-            
+        <select id="disponibilidade" class="option">
             <option value="matutino">Matutino</option>
             <option value="noturno">Noturno</option>
         </select>
         <button class="positive option" onclick="addDisponibilidade()">Enviar</button>`;
-    }else{
-        document.getElementById("adcionarLic").innerHTML = ''
-    }
+
 }
 
 function adicionarModalidade(){
-    if(document.getElementById("adcionarLic").innerHTML == ''){
-        document.getElementById("adcionarLic").innerHTML += `
+    document.getElementById("adcionarLic").style.display = "block"
+    let adcionarLic = document.getElementById("adcionarLic");
+  
+        adcionarLic.innerHTML = `
         <span>Modalidade</span>
-        <select id="Modalidade">
-            
+        <select id="Modalidade" class="option">
             <option value="presencial">Presencial</option>
             <option value="remoto">Remoto</option>
         </select>
         <button class="positive option" onclick="addModalidade()">Enviar</button>`;
-    }else{
-        document.getElementById("adcionarLic").innerHTML = ''
-    }
+  
 }
+
 
 
 
@@ -504,24 +503,32 @@ function addDisponibilidade() {
 
 
 function updateUserDataInDashboard(userData) {
-    document.getElementById("userName").innerText = userData.nome;
-    document.getElementById("userCargo").innerText = userData.cargo;
+    document.getElementById("userName").innerHTML = userData.nome+`<span class="editable">
+            
+        <input type="text" id="nameInput">
+        <a id="editButton" style="position: absolute;">✏️</a>
+    </span>`
+    document.getElementById("userCargo").innerHTML = '<strong>seu cargo:</strong> '+userData.cargo;
 
     if (userData.cargo === "professor") {
-            document.getElementById("licenciaturas").innerHTML += '<br><strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adcionar</span>';
+        document.getElementById("licenciaturas").style.display = "block";
+        document.getElementById("periodos").style.display = "block";
+        document.getElementById("modalidades").style.display = "block";
+        document.getElementById("candidaturas").style.display = "block";
+            document.getElementById("licenciaturas").innerHTML += '<strong>Licenciaturas:</strong> <span onclick="adicionarLicenciaturas()" class="option">Adicionar</span>';
 
             userData.licenciaturas.forEach(element => {
             document.getElementById("licenciaturas").innerHTML += `<p>- ${element[1]}<span onclick="removerLicenciatura('${element[0]}')" class="option negative"> remover</span></p>`
             });
             
-            document.getElementById("candidaturas").innerHTML += '<br><strong>Pretendo ministrar: </strong>'
+            document.getElementById("candidaturas").innerHTML += '<strong>Pretendo ministrar: </strong>'
             if (Array.isArray(userData.candidaturas) && userData.candidaturas.length > 0) {
             userData.candidaturas.forEach(element => {
             document.getElementById("candidaturas").innerHTML += `<p>- ${element.nome}<span onclick="removerCandidatura(${element.id})" class="option negative"> remover</span></p>`;
             });
             }
 
-            document.getElementById("periodos").innerHTML += '<br><strong>Estou disponível: </strong><span onclick="adicionarPeriodo()" class="option">Adcionar</span>'
+            document.getElementById("periodos").innerHTML += '<strong>Estou disponível: </strong><span onclick="adicionarPeriodo()" class="option">Adicionar</span>'
             if (Array.isArray(userData.periodos) && userData.periodos.length > 0) {
 
             userData.periodos.forEach(element => {
@@ -529,14 +536,32 @@ function updateUserDataInDashboard(userData) {
             });
             }
 
-            document.getElementById("modalidades").innerHTML += '<br><strong>Modalidades: </strong><span onclick="adicionarModalidade()" class="option">Adcionar</span>'
+            document.getElementById("modalidades").innerHTML += '<strong>Modalidades: </strong><span onclick="adicionarModalidade()" class="option">Adicionar</span>'
             if (Array.isArray(userData.periodos) && userData.periodos.length > 0) {
 
             userData.modalidades.forEach(element => {
             document.getElementById("modalidades").innerHTML += `<p>- ${element}<span onclick="removerModalidade('${element}')" class="option negative"> remover</span></p>`;
             });
             }
+
+            
     }
+    document.getElementById("editButton").addEventListener("click", function() {
+        let nameSpan = document.getElementById("userName");
+        let nameInput = document.getElementById("nameInput");
+
+        nameInput.value = nameSpan.innerText;
+        nameSpan.style.display = "none";
+        nameInput.style.display = "inline";
+        nameInput.focus();
+    });
+
+    document.getElementById("nameInput").addEventListener("blur", updateName);
+    document.getElementById("nameInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            updateName();
+        }
+    });
 }
 
 async function removerCandidatura(id) {
@@ -681,34 +706,37 @@ function showContentBasedOnCargo(cargo, name) {
     
     document.querySelector('.user-section').style.display = 'none';
     document.getElementById('login').style.display="none"
-    document.getElementById("btnDashboard").style.display = "block";
+    
+      document.getElementById('pUser').innerHTML += ''
 
     // Exibe a seção correspondente ao cargo
     if (cargo == 'admin') {
         document.querySelector('.user-section').style.display = 'block';
         document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-        document.getElementById('pUser').innerHTML = 'Sendo ADM, aqui você pode gerenciar tudo!'
+        document.getElementById('pUser').innerHTML += 'Sendo ADM, aqui você pode gerenciar tudo!'+'<button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2"><a href="/downloads">Baixar grades</a></button>'+`<button id="btnDashboard" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        `
         
         
     } else if (cargo == 'user') {
         document.querySelector('.user-section').style.display = 'block';
         document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-        document.getElementById('pUser').innerHTML = 'Seu cargo não foi definido ainda... contate o ADM!'
-
-       
-        
+        document.getElementById('pUser').innerHTML += 'Seu cargo não foi definido ainda... contate o ADM!'+'<button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2""><a href="/downloads">Baixar grades</a></button>'+`<button id="btnDashboard" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        `
     }else if(cargo == 'professor') {
         document.querySelector('.user-section').style.display = 'block';
         document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-        document.getElementById('pUser').innerHTML = 'Como professor, aqui você pode se candidatar as vagas!'
+        document.getElementById('pUser').innerHTML += `Como professor, aqui você pode se candidatar as vagas!
+        <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2""><a href="/downloads">Baixar grades</a></button><button id="btnDashboard" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2" onclick="window.location.href='/dashboard'">Ir para Dashboard</button>
+        `
         return
      
       
     }else if(cargo == 'coordenador') {
         document.querySelector('.user-section').style.display = 'block';
         document.getElementById('titleUser').innerHTML = 'Bem vindo '+name+'!'
-        document.getElementById('pUser').innerHTML = 'Como coordenador, aqui você pode se definir a grade das matérias!'
-     
+        document.getElementById('pUser').innerHTML += 'Como coordenador, aqui você pode se definir a grade das matérias!'+'<button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2"><a href="/downloads">Baixar grades</a></button>'+`<button id="btnDashboard" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-300 mb-2" onclick="window.location.href="/dashboard"">Ir para Dashboard</button>`
+      
+        
       
     }else{
         console.log('erro!')
@@ -769,53 +797,9 @@ function renderCargos(data) {
 
 
 
-function aplicarTransparencia() {
-    // Obtém o cookie existente
-    let disciplinas = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('disciplinas='));
-
-    if (disciplinas) {
-        try {
-            disciplinas = JSON.parse(decodeURIComponent(disciplinas.split('=')[1]));
-        } catch (e) {
-            disciplinas = [];
-        }
-    } else {
-        disciplinas = [];
-    }
-
-    // Aplica a transparência nos elementos correspondentes
-    disciplinas.forEach(codigo => {
-        let elementos = document.querySelectorAll(`.course${codigo}`);
-        elementos.forEach(el => {
-            el.style.opacity = "0.5"; // 50% de transparência
-            el.innerText = "Candidato"
-        });
-    });
-}
-
-
 
 function meCandidatar(codigoDisciplina) {
-    let disciplinas = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('disciplinas='));
-
-    if (disciplinas) {
-        // Converte para array (se existir)
-        disciplinas = JSON.parse(decodeURIComponent(disciplinas.split('=')[1]));
-    } else {
-        disciplinas = [];
-    }
-
-    // Verifica se a disciplina já está no array
-    if (!disciplinas.includes(codigoDisciplina)) {
-        disciplinas.push(codigoDisciplina);
-        
-        // Atualiza o cookie com as disciplinas
-        document.cookie = `disciplinas=${encodeURIComponent(JSON.stringify(disciplinas))}; path=/; max-age=15552000`;
-    }
+  
 
     let ID = getCookie("userId");
 
@@ -834,11 +818,6 @@ function meCandidatar(codigoDisciplina) {
         .then(data => {
             console.log("Resposta do servidor:", data);
 
-            // Aplica a transparência no botão
-            let botao = document.querySelector(".course" + codigoDisciplina);
-            if (botao) {
-                botao.style.opacity = "0.5";
-            }
         })
         .catch(error => {
             console.error("Erro ao se candidatar:", error);

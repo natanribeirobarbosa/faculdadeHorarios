@@ -78,8 +78,7 @@
             <div class="flex flex-wrap gap-2 justify-center">
                 <!-- Iterando sobre os professores -->
                 {% for chave_disciplina, dados in disciplinas.items() %}
-   
-            
+                
                 {% for candidato in dados.candidatos %}
                     <div class="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer font-bold draggable draggable-professor {{candidato.ref}}" draggable="true">
                         {{ candidato.nome }}
@@ -113,6 +112,8 @@
             </div>
         </div>
         <div>
+            
+            <button style="background-color:rgb(71, 71, 71);"><a href="/">Voltar</a></button>
             <button style="background-color:rgb(71, 71, 71);" onclick="botao()">Limpar</button>
             <button style="background-color:rgba(0, 68, 255, 0.777);" onclick="criarMapa()">Salvar</button>
             <style>
@@ -265,7 +266,7 @@
 
     // Monta os dados para envio
     const data = {
-        
+
         professores: professores,
         materias: materias,
         curso: curso

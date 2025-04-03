@@ -13,13 +13,7 @@ body {
     background: linear-gradient(135deg, #109abd, #05052e);
 
 }
-button{
-    transition: 100ms;
 
-    transform: scale(1);  /* Aumenta o tamanho */        }
-button:hover{   
-    transition: 100ms;
-    transform: scale(1.1);  /* Aumenta o tamanho */        }
     .d1 {
 background-color: #000000; /* roxo escuro suave */
 }
